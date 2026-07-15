@@ -1,0 +1,10 @@
+{
+  "name": "eword-app",
+  "version": "1.0.1",
+  "private": true,
+  "description": "Mobile-first debt tracking app rebuilt from the available UI reference.",
+  "scripts": {
+    "start": "python3 -m http.server 4173",
+    "preview": "python3 -m http.server 4173"
+  }
+}
