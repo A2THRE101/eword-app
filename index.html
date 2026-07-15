@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>eword app</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f7f3ec;
+      --surface: #fffdf9;
+      --border: #e3d8c8;
+      --muted: #756f68;
+      --text: #181818;
+      --accent: #9b681d;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+    }
+
+    .app {
+      width: min(430px, calc(100vw - 24px));
+    }
+
+    .balance-card {
+      padding: 32px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 1px 2px rgba(35, 26, 14, 0.04);
+    }
+
+    .label {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 26px;
+      line-height: 1.2;
+      font-weight: 400;
+    }
+
+    .total {
+      margin: 0;
+      font-size: 38px;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .divider {
+      height: 2px;
+      margin: 22px 0;
+      background: var(--border);
+    }
+
+    .row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 26px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .amount {
+      color: var(--accent);
+      font-size: 32px;
+      line-height: 1.1;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .version {
+      margin: 14px 2px 0;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    @media (max-width: 380px) {
+      .balance-card {
+        padding: 24px;
+      }
+
+      .label,
+      .status {
+        font-size: 22px;
+      }
+
+      .total {
+        font-size: 34px;
+      }
+
+      .amount {
+        font-size: 28px;
+      }
+
+      .row {
+        gap: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="balance-card" aria-label="Баланс">
+      <p class="label">Вам должны</p>
+      <p class="total">7 000 ₽</p>
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <span class="status">Неподтверждено</span>
+        <span class="amount">3 000 ₽</span>
+      </div>
+    </section>
+
+    <p class="version">v1.0.0</p>
+  </main>
+</body>
+</html>
