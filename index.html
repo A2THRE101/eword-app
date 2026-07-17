@@ -3,121 +3,140 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f6f7f2" />
-    <title>Eword Loans 1.1.0</title>
+    <meta name="theme-color" content="#f4f6f3" />
+    <title>Eword Mobile Preview 0.2.0</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="app-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Eword 1.1.0</p>
-          <h1>Займы между людьми</h1>
-        </div>
-        <div class="top-actions" aria-label="Действия">
-          <button class="icon-button" id="exportData" type="button" title="Экспортировать JSON" aria-label="Экспортировать JSON">↓</button>
-          <button class="icon-button" id="resetDemo" type="button" title="Сбросить демо" aria-label="Сбросить демо">↺</button>
-        </div>
-      </header>
-
-      <main>
-        <section class="summary-panel" aria-label="Сводка займов">
-          <div class="summary-main">
-            <span>Активный остаток</span>
-            <strong id="totalOutstanding">0 ₽</strong>
+    <main class="preview-shell">
+      <section class="phone" aria-label="Eword mobile visual preview">
+        <header class="app-header">
+          <div>
+            <p class="eyebrow">Eword Mobile 0.2.0</p>
+            <h1 id="screenTitle">Дашборд</h1>
           </div>
-          <div class="summary-grid">
-            <div><span>Мне должны</span><strong id="totalReceivable">0 ₽</strong></div>
-            <div><span>Я должен</span><strong id="totalPayable">0 ₽</strong></div>
-            <div><span>Просрочено</span><strong id="totalOverdue">0 ₽</strong></div>
+          <button class="icon-button" id="syncButton" type="button" title="Синхронизация" aria-label="Синхронизация">↻</button>
+        </header>
+
+        <section class="screen active" id="dashboardScreen" data-screen="dashboard">
+          <div class="balance-band">
+            <span>Чистая позиция</span>
+            <strong id="netPosition">0 ₽</strong>
+            <p id="syncState">Синхронизировано только что</p>
           </div>
-        </section>
 
-        <section class="workspace">
-          <form id="loanForm" class="loan-form" aria-label="Добавить займ">
-            <div class="segmented wide" role="group" aria-label="Направление займа">
-              <label><input type="radio" name="direction" value="lent" checked /><span>Я дал</span></label>
-              <label><input type="radio" name="direction" value="borrowed" /><span>Я взял</span></label>
-            </div>
-            <label>
-              <span>Человек</span>
-              <input id="personInput" name="person" type="text" placeholder="Например, Азиз" autocomplete="off" required />
-            </label>
-            <label>
-              <span>Сумма</span>
-              <input id="amountInput" name="amount" type="number" min="1" step="1" placeholder="5000" inputmode="numeric" required />
-            </label>
-            <label>
-              <span>Срок возврата</span>
-              <input id="dueDateInput" name="dueDate" type="date" />
-            </label>
-            <label>
-              <span>Статус</span>
-              <select id="statusInput" name="status">
-                <option value="active">Активен</option>
-                <option value="pending">Ждет подтверждения</option>
-                <option value="closed">Закрыт</option>
-              </select>
-            </label>
-            <label class="wide">
-              <span>Комментарий</span>
-              <input id="noteInput" name="note" type="text" placeholder="Перевод, наличные, за поездку" autocomplete="off" />
-            </label>
-            <button class="submit-button wide" type="submit">Добавить займ</button>
-          </form>
+          <div class="metric-grid" aria-label="Текущие обязательства">
+            <button class="metric-tile" type="button" data-open-filter="lent">
+              <span>Мне должны</span>
+              <strong id="lentTotal">0 ₽</strong>
+            </button>
+            <button class="metric-tile" type="button" data-open-filter="borrowed">
+              <span>Я должен</span>
+              <strong id="borrowedTotal">0 ₽</strong>
+            </button>
+            <button class="metric-tile urgent" type="button" data-open-filter="overdue">
+              <span>Просрочено</span>
+              <strong id="overdueTotal">0 ₽</strong>
+            </button>
+            <button class="metric-tile" type="button" data-screen-target="confirmations">
+              <span>На подтверждении</span>
+              <strong id="pendingCount">0</strong>
+            </button>
+          </div>
 
-          <section class="content-section" aria-label="Список займов">
-            <div class="section-heading">
-              <h2>Журнал</h2>
-              <div class="tabs" role="tablist" aria-label="Фильтр займов">
-                <button class="tab active" type="button" data-filter="all">Все</button>
-                <button class="tab" type="button" data-filter="lent">Мне должны</button>
-                <button class="tab" type="button" data-filter="borrowed">Я должен</button>
-                <button class="tab" type="button" data-filter="overdue">Просрочено</button>
-              </div>
+          <section class="section-block">
+            <div class="section-title">
+              <h2>Ближайшие действия</h2>
+              <button class="text-button" type="button" data-screen-target="journal">Все</button>
             </div>
-            <div class="loan-list" id="loanList"></div>
-            <p class="empty-state" id="emptyState">Займов по этому фильтру нет.</p>
+            <div class="stack-list" id="actionList"></div>
           </section>
         </section>
-      </main>
-    </div>
 
-    <dialog id="paymentDialog">
-      <form method="dialog" id="paymentForm">
-        <h2>Зафиксировать платеж</h2>
-        <p id="paymentHint"></p>
-        <label>
-          <span>Сумма платежа</span>
-          <input id="paymentAmount" name="paymentAmount" type="number" min="1" step="1" inputmode="numeric" required />
-        </label>
-        <menu>
-          <button type="button" value="cancel" id="cancelPayment">Отмена</button>
-          <button class="submit-button" value="default">Сохранить</button>
-        </menu>
-      </form>
-    </dialog>
+        <section class="screen" id="journalScreen" data-screen="journal">
+          <div class="controls">
+            <div class="type-tabs" role="tablist" aria-label="Типы долгов">
+              <button class="chip active" type="button" data-filter="all">Все</button>
+              <button class="chip" type="button" data-filter="lent">Я дал</button>
+              <button class="chip" type="button" data-filter="borrowed">Я взял</button>
+              <button class="chip" type="button" data-filter="pending">Ждут</button>
+              <button class="chip" type="button" data-filter="closed">Закрытые</button>
+            </div>
+            <label class="sort-control">
+              <span>Сортировка</span>
+              <select id="sortSelect">
+                <option value="due">По сроку</option>
+                <option value="amount">По сумме</option>
+                <option value="created">По дате</option>
+                <option value="status">По статусу</option>
+              </select>
+            </label>
+          </div>
+          <div class="stack-list journal-list" id="journalList"></div>
+          <p class="empty-state" id="journalEmpty">Записей по этому фильтру нет.</p>
+        </section>
 
-    <template id="loanTemplate">
-      <article class="loan-item">
-        <div class="loan-main">
-          <div class="avatar"></div>
-          <div class="loan-copy">
+        <section class="screen" id="confirmationsScreen" data-screen="confirmations">
+          <div class="notice">
+            <strong>Подтверждения второй стороны</strong>
+            <span>Займы и платежи становятся финальными после согласия обоих участников.</span>
+          </div>
+          <div class="stack-list" id="confirmationList"></div>
+        </section>
+
+        <section class="screen" id="profileScreen" data-screen="profile">
+          <div class="profile-block">
+            <div class="profile-avatar">М</div>
+            <div>
+              <h2>Мурад</h2>
+              <p>Аккаунт синхронизирован между iOS и Android</p>
+            </div>
+          </div>
+          <div class="settings-list">
+            <button type="button"><span>Валюта по умолчанию</span><strong>RUB</strong></button>
+            <button type="button"><span>Push-напоминания</span><strong>Вкл</strong></button>
+            <button type="button"><span>Вход</span><strong>Телефон / email</strong></button>
+            <button type="button"><span>Экспорт данных</span><strong>JSON</strong></button>
+          </div>
+        </section>
+
+        <nav class="bottom-nav" aria-label="Навигация">
+          <button class="active" type="button" data-screen-target="dashboard"><span>⌂</span>Дашборд</button>
+          <button type="button" data-screen-target="journal"><span>≡</span>Журнал</button>
+          <button type="button" data-screen-target="confirmations"><span>✓</span>Запросы</button>
+          <button type="button" data-screen-target="profile"><span>○</span>Профиль</button>
+        </nav>
+      </section>
+    </main>
+
+    <template id="loanRowTemplate">
+      <article class="loan-row">
+        <div class="row-main">
+          <div class="row-avatar"></div>
+          <div class="row-copy">
             <h3></h3>
             <p></p>
-            <div class="meta-line"></div>
+            <div class="row-meta"></div>
           </div>
         </div>
-        <div class="loan-side">
+        <div class="row-side">
           <strong></strong>
           <span class="status-pill"></span>
-          <div class="progress-track"><span></span></div>
-          <div class="item-actions">
-            <button type="button" data-action="pay">Платеж</button>
-            <button type="button" data-action="toggle"></button>
-            <button type="button" data-action="delete" aria-label="Удалить">×</button>
-          </div>
+        </div>
+      </article>
+    </template>
+
+    <template id="confirmationTemplate">
+      <article class="confirm-row">
+        <div>
+          <span class="request-type"></span>
+          <h3></h3>
+          <p></p>
+        </div>
+        <div class="confirm-actions">
+          <button type="button" data-action="decline">Нет</button>
+          <button type="button" data-action="approve">Да</button>
         </div>
       </article>
     </template>

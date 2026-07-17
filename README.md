@@ -1,57 +1,32 @@
 # Eword App
 
-Version: `1.1.0`
+Version: `0.2.0`
 
-Eword is a mobile-first personal loan tracker for debts between individuals. This version is a static PWA-style prototype: it runs in the browser, stores data locally, and does not require a backend, database, or secrets.
+Eword Mobile Visual Preview is an interactive browser prototype for the future iOS and Android app. It is still a static preview, but its screens and flows are shaped around the mobile product: dashboard, obligations, journal, sorting, and second-party confirmations.
 
-## What is included
+## Included in this preview
 
-- Track loans you gave and loans you borrowed.
-- Store borrower/lender name, amount, repayment due date, status, and note.
-- See totals for active balance, receivables, payables, and overdue balance.
-- Record partial repayments and automatically close fully repaid loans.
-- Filter the journal by all, receivable, payable, and overdue loans.
-- Export current data as JSON.
-- Reset demo data for testing.
+- Mobile dashboard with current obligations.
+- Totals for receivables, payables, overdue debt, and pending confirmations.
+- Journal separated by loan type.
+- Sorting by due date, amount, creation date, and status.
+- Confirmation queue for loans and payments.
+- Profile/settings preview.
+- Static GitHub Pages deployment via `gh-pages`.
 
-## Run locally
+## Product direction
 
-```bash
-npm run preview
-```
+Target mobile product:
 
-Then open:
+- React Native + Expo for iOS and Android.
+- Supabase backend for authentication, sync, PostgreSQL storage, and realtime updates.
+- Second-party confirmation for loans and payments.
+- Push reminders and activity history.
 
-```text
-http://localhost:4173
-```
+## Data flow preview
 
-## Data flow
-
-1. A user enters loan details in the browser form.
-2. `app.js` validates the person and amount.
-3. The loan is added to in-memory state.
-4. The full loan journal is saved to browser `localStorage`.
-5. Totals are recalculated from active loans and repayments.
-6. The UI re-renders the summary panel and journal.
-7. When the user records a payment, the payment is applied to the selected loan, saved locally, and the visible balance updates.
-
-## Architecture notes
-
-Current version:
-
-- Frontend: plain HTML, CSS, and JavaScript.
-- Storage: browser `localStorage`.
-- Deployment: any static host, including GitHub Pages.
-- Authentication: none.
-
-Recommended next version:
-
-- Add a backend API for shared multi-device data.
-- Add user authentication by phone, email, Telegram, or passkey.
-- Move loans, payments, and parties into a database.
-- Add invite links so the second party can confirm a loan.
-
-## Version notes
-
-`1.1.0` expands the first rebuilt version from a simple debt list into a fuller personal loan journal.
+1. User opens Eword on mobile.
+2. Dashboard reads active loans and pending confirmations.
+3. Journal groups records by debt type and applies the selected sort.
+4. Confirmation requests model actions requiring the second party.
+5. Future mobile app will replace static seed data with synced backend data.

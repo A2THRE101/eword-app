@@ -1,312 +1,302 @@
-const VERSION = "1.1.0";
-const STORAGE_KEY = "eword-loans-v2";
+const VERSION = "0.2.0";
 
-const today = new Date();
-const isoDate = (offsetDays) => {
-  const date = new Date(today);
-  date.setDate(date.getDate() + offsetDays);
-  return date.toISOString().slice(0, 10);
-};
-
-const seedLoans = [
+const loans = [
   {
-    id: "loan-demo-1",
-    direction: "lent",
+    id: "loan-1",
     person: "Азамат",
+    direction: "lent",
     amount: 12000,
     paid: 4000,
-    dueDate: isoDate(7),
+    dueDate: "2026-07-22",
     status: "active",
     note: "Бронь билетов",
-    createdAt: Date.now() - 172800000,
+    createdAt: "2026-07-12",
+    confirmedByOther: true,
   },
   {
-    id: "loan-demo-2",
-    direction: "borrowed",
+    id: "loan-2",
     person: "Мурад",
+    direction: "borrowed",
     amount: 5000,
     paid: 0,
-    dueDate: isoDate(-2),
-    status: "active",
+    dueDate: "2026-07-16",
+    status: "overdue",
     note: "Наличные до зарплаты",
-    createdAt: Date.now() - 86400000,
+    createdAt: "2026-07-10",
+    confirmedByOther: true,
   },
   {
-    id: "loan-demo-3",
-    direction: "lent",
+    id: "loan-3",
     person: "Руслан",
+    direction: "lent",
     amount: 3000,
     paid: 0,
-    dueDate: "",
+    dueDate: "2026-07-27",
     status: "pending",
-    note: "Ожидает подтверждения перевода",
-    createdAt: Date.now() - 3600000,
+    note: "Ждет подтверждения перевода",
+    createdAt: "2026-07-17",
+    confirmedByOther: false,
+  },
+  {
+    id: "loan-4",
+    person: "Сабина",
+    direction: "borrowed",
+    amount: 18000,
+    paid: 9000,
+    dueDate: "2026-08-02",
+    status: "active",
+    note: "Оплата ремонта",
+    createdAt: "2026-07-01",
+    confirmedByOther: true,
+  },
+  {
+    id: "loan-5",
+    person: "Тимур",
+    direction: "lent",
+    amount: 7000,
+    paid: 7000,
+    dueDate: "2026-07-11",
+    status: "closed",
+    note: "Закрыто двумя сторонами",
+    createdAt: "2026-06-20",
+    confirmedByOther: true,
+  },
+];
+
+const confirmations = [
+  {
+    id: "confirm-1",
+    type: "Новый займ",
+    title: "Руслан подтверждает 3 000 ₽",
+    description: "Вы указали, что дали деньги. Вторая сторона еще не согласовала запись.",
+  },
+  {
+    id: "confirm-2",
+    type: "Платеж",
+    title: "Азамат внес 4 000 ₽",
+    description: "Платеж ожидает вашего подтверждения перед изменением остатка.",
   },
 ];
 
 const state = {
-  loans: loadLoans(),
+  screen: "dashboard",
   filter: "all",
-  paymentTargetId: null,
+  sort: "due",
 };
 
 const nodes = {
-  totalOutstanding: document.querySelector("#totalOutstanding"),
-  totalReceivable: document.querySelector("#totalReceivable"),
-  totalPayable: document.querySelector("#totalPayable"),
-  totalOverdue: document.querySelector("#totalOverdue"),
-  loanForm: document.querySelector("#loanForm"),
-  loanList: document.querySelector("#loanList"),
-  emptyState: document.querySelector("#emptyState"),
-  loanTemplate: document.querySelector("#loanTemplate"),
-  resetDemo: document.querySelector("#resetDemo"),
-  exportData: document.querySelector("#exportData"),
-  paymentDialog: document.querySelector("#paymentDialog"),
-  paymentForm: document.querySelector("#paymentForm"),
-  paymentHint: document.querySelector("#paymentHint"),
-  paymentAmount: document.querySelector("#paymentAmount"),
-  cancelPayment: document.querySelector("#cancelPayment"),
-  tabs: [...document.querySelectorAll(".tab")],
+  screenTitle: document.querySelector("#screenTitle"),
+  syncButton: document.querySelector("#syncButton"),
+  syncState: document.querySelector("#syncState"),
+  screens: [...document.querySelectorAll(".screen")],
+  navButtons: [...document.querySelectorAll("[data-screen-target]")],
+  filterButtons: [...document.querySelectorAll("[data-filter]")],
+  metricButtons: [...document.querySelectorAll("[data-open-filter]")],
+  sortSelect: document.querySelector("#sortSelect"),
+  loanTemplate: document.querySelector("#loanRowTemplate"),
+  confirmationTemplate: document.querySelector("#confirmationTemplate"),
+  actionList: document.querySelector("#actionList"),
+  journalList: document.querySelector("#journalList"),
+  journalEmpty: document.querySelector("#journalEmpty"),
+  confirmationList: document.querySelector("#confirmationList"),
+  netPosition: document.querySelector("#netPosition"),
+  lentTotal: document.querySelector("#lentTotal"),
+  borrowedTotal: document.querySelector("#borrowedTotal"),
+  overdueTotal: document.querySelector("#overdueTotal"),
+  pendingCount: document.querySelector("#pendingCount"),
 };
 
-document.title = `Eword Loans ${VERSION}`;
+document.title = `Eword Mobile Preview ${VERSION}`;
 
-nodes.loanForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const formData = new FormData(nodes.loanForm);
-  const person = String(formData.get("person") || "").trim();
-  const amount = Math.round(Number(formData.get("amount")));
+nodes.navButtons.forEach((button) => {
+  button.addEventListener("click", () => setScreen(button.dataset.screenTarget));
+});
 
-  if (!person || !Number.isFinite(amount) || amount <= 0) return;
-
-  state.loans.unshift({
-    id: crypto.randomUUID(),
-    direction: String(formData.get("direction")),
-    person,
-    amount,
-    paid: 0,
-    dueDate: String(formData.get("dueDate") || ""),
-    status: String(formData.get("status")),
-    note: String(formData.get("note") || "").trim(),
-    createdAt: Date.now(),
+nodes.metricButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.filter = button.dataset.openFilter;
+    setScreen("journal");
   });
+});
 
-  nodes.loanForm.reset();
-  nodes.loanForm.elements.direction.value = "lent";
-  nodes.loanForm.elements.status.value = "active";
-  persist();
+nodes.filterButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.filter = button.dataset.filter;
+    render();
+  });
+});
+
+nodes.sortSelect.addEventListener("change", () => {
+  state.sort = nodes.sortSelect.value;
   render();
 });
 
-nodes.loanList.addEventListener("click", (event) => {
+nodes.syncButton.addEventListener("click", () => {
+  nodes.syncButton.classList.add("spinning");
+  nodes.syncState.textContent = "Синхронизация...";
+  window.setTimeout(() => {
+    nodes.syncButton.classList.remove("spinning");
+    nodes.syncState.textContent = "Синхронизировано только что";
+  }, 650);
+});
+
+nodes.confirmationList.addEventListener("click", (event) => {
   const button = event.target.closest("button");
-  const item = event.target.closest(".loan-item");
-  if (!button || !item) return;
+  const row = event.target.closest(".confirm-row");
+  if (!button || !row) return;
 
-  const loan = state.loans.find((entry) => entry.id === item.dataset.id);
-  if (!loan) return;
-
-  if (button.dataset.action === "delete") {
-    state.loans = state.loans.filter((entry) => entry.id !== loan.id);
-    persist();
-    render();
-    return;
-  }
-
-  if (button.dataset.action === "toggle") {
-    loan.status = loan.status === "closed" ? "active" : "closed";
-    loan.paid = loan.status === "closed" ? loan.amount : Math.min(loan.paid, loan.amount - 1);
-    persist();
-    render();
-    return;
-  }
-
-  if (button.dataset.action === "pay") openPaymentDialog(loan);
-});
-
-nodes.tabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    state.filter = tab.dataset.filter;
-    render();
-  });
-});
-
-nodes.resetDemo.addEventListener("click", () => {
-  state.loans = seedLoans.map((loan) => ({ ...loan, id: crypto.randomUUID() }));
-  persist();
-  render();
-});
-
-nodes.exportData.addEventListener("click", () => {
-  const payload = {
-    app: "Eword Loans",
-    version: VERSION,
-    exportedAt: new Date().toISOString(),
-    loans: state.loans,
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `eword-loans-${new Date().toISOString().slice(0, 10)}.json`;
-  link.click();
-  URL.revokeObjectURL(url);
-});
-
-nodes.cancelPayment.addEventListener("click", () => nodes.paymentDialog.close());
-
-nodes.paymentForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const loan = state.loans.find((entry) => entry.id === state.paymentTargetId);
-  const payment = Math.round(Number(nodes.paymentAmount.value));
-  if (!loan || !Number.isFinite(payment) || payment <= 0) return;
-
-  loan.paid = Math.min(loan.amount, loan.paid + payment);
-  if (loan.paid >= loan.amount) loan.status = "closed";
-  persist();
-  nodes.paymentDialog.close();
-  render();
+  row.classList.add(button.dataset.action === "approve" ? "approved" : "declined");
+  window.setTimeout(() => row.remove(), 220);
 });
 
 render();
 
-function loadLoans() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return seedLoans.map((loan) => ({ ...loan, id: crypto.randomUUID() }));
-
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(normalizeLoan) : seedLoans;
-  } catch {
-    return seedLoans;
-  }
-}
-
-function normalizeLoan(loan) {
-  return {
-    id: loan.id || crypto.randomUUID(),
-    direction: loan.direction === "borrowed" ? "borrowed" : "lent",
-    person: String(loan.person || "Без имени"),
-    amount: Math.max(1, Math.round(Number(loan.amount) || 0)),
-    paid: Math.max(0, Math.round(Number(loan.paid) || 0)),
-    dueDate: String(loan.dueDate || ""),
-    status: ["active", "pending", "closed"].includes(loan.status) ? loan.status : "active",
-    note: String(loan.note || ""),
-    createdAt: Number(loan.createdAt) || Date.now(),
-  };
-}
-
-function persist() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.loans));
+function setScreen(screen) {
+  state.screen = screen;
+  render();
 }
 
 function render() {
-  const totals = calculateTotals();
-  nodes.totalOutstanding.textContent = formatMoney(totals.outstanding);
-  nodes.totalReceivable.textContent = formatMoney(totals.receivable);
-  nodes.totalPayable.textContent = formatMoney(totals.payable);
-  nodes.totalOverdue.textContent = formatMoney(totals.overdue);
-
-  nodes.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.filter === state.filter));
-
-  const visibleLoans = state.loans
-    .filter(matchesFilter)
-    .sort((a, b) => Number(isOverdue(b)) - Number(isOverdue(a)) || b.createdAt - a.createdAt);
-
-  nodes.loanList.replaceChildren(...visibleLoans.map(renderLoan));
-  nodes.emptyState.classList.toggle("visible", visibleLoans.length === 0);
+  renderScreen();
+  renderDashboard();
+  renderJournal();
+  renderConfirmations();
 }
 
-function calculateTotals() {
-  return state.loans.reduce(
-    (totals, loan) => {
-      const remaining = getRemaining(loan);
-      if (loan.status === "closed") return totals;
+function renderScreen() {
+  const titles = {
+    dashboard: "Дашборд",
+    journal: "Журнал",
+    confirmations: "Подтверждения",
+    profile: "Профиль",
+  };
 
-      totals.outstanding += remaining;
-      if (loan.direction === "lent") totals.receivable += remaining;
-      if (loan.direction === "borrowed") totals.payable += remaining;
-      if (isOverdue(loan)) totals.overdue += remaining;
-      return totals;
-    },
-    { outstanding: 0, receivable: 0, payable: 0, overdue: 0 },
-  );
+  nodes.screenTitle.textContent = titles[state.screen];
+  nodes.screens.forEach((screen) => screen.classList.toggle("active", screen.dataset.screen === state.screen));
+  nodes.navButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.screenTarget === state.screen);
+  });
+  nodes.filterButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.filter === state.filter);
+  });
 }
 
-function matchesFilter(loan) {
-  if (state.filter === "all") return true;
-  if (state.filter === "overdue") return isOverdue(loan);
-  return loan.direction === state.filter;
+function renderDashboard() {
+  const activeLoans = loans.filter((loan) => loan.status !== "closed");
+  const lent = sum(activeLoans.filter((loan) => loan.direction === "lent"));
+  const borrowed = sum(activeLoans.filter((loan) => loan.direction === "borrowed"));
+  const overdue = sum(activeLoans.filter((loan) => loan.status === "overdue"));
+  const pending = loans.filter((loan) => loan.status === "pending").length + confirmations.length;
+
+  nodes.netPosition.textContent = formatMoney(lent - borrowed);
+  nodes.lentTotal.textContent = formatMoney(lent);
+  nodes.borrowedTotal.textContent = formatMoney(borrowed);
+  nodes.overdueTotal.textContent = formatMoney(overdue);
+  nodes.pendingCount.textContent = String(pending);
+
+  const actions = loans
+    .filter((loan) => loan.status === "overdue" || loan.status === "pending" || getDaysLeft(loan) <= 7)
+    .sort((a, b) => statusWeight(a) - statusWeight(b))
+    .slice(0, 3);
+
+  nodes.actionList.replaceChildren(...actions.map((loan) => renderLoanRow(loan, "action")));
 }
 
-function renderLoan(loan) {
+function renderJournal() {
+  const filtered = loans.filter((loan) => {
+    if (state.filter === "all") return true;
+    if (state.filter === "pending") return loan.status === "pending";
+    if (state.filter === "closed") return loan.status === "closed";
+    if (state.filter === "overdue") return loan.status === "overdue";
+    return loan.direction === state.filter;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (state.sort === "amount") return getRemaining(b) - getRemaining(a);
+    if (state.sort === "created") return new Date(b.createdAt) - new Date(a.createdAt);
+    if (state.sort === "status") return statusWeight(a) - statusWeight(b);
+    return new Date(a.dueDate || "2099-12-31") - new Date(b.dueDate || "2099-12-31");
+  });
+
+  nodes.journalList.replaceChildren(...sorted.map((loan) => renderLoanRow(loan, "journal")));
+  nodes.journalEmpty.classList.toggle("visible", sorted.length === 0);
+}
+
+function renderConfirmations() {
+  nodes.confirmationList.replaceChildren(...confirmations.map(renderConfirmation));
+}
+
+function renderLoanRow(loan, mode) {
   const fragment = nodes.loanTemplate.content.cloneNode(true);
-  const item = fragment.querySelector(".loan-item");
-  const avatar = fragment.querySelector(".avatar");
+  const row = fragment.querySelector(".loan-row");
+  const avatar = fragment.querySelector(".row-avatar");
   const title = fragment.querySelector("h3");
   const note = fragment.querySelector("p");
-  const meta = fragment.querySelector(".meta-line");
-  const amount = fragment.querySelector(".loan-side strong");
+  const meta = fragment.querySelector(".row-meta");
+  const amount = fragment.querySelector(".row-side strong");
   const status = fragment.querySelector(".status-pill");
-  const progress = fragment.querySelector(".progress-track span");
-  const payButton = fragment.querySelector('[data-action="pay"]');
-  const toggle = fragment.querySelector('[data-action="toggle"]');
 
-  const remaining = getRemaining(loan);
-  const progressValue = Math.round((loan.paid / loan.amount) * 100);
-  const overdue = isOverdue(loan);
-
-  item.dataset.id = loan.id;
-  item.classList.toggle("overdue", overdue);
-  avatar.textContent = loan.person.slice(0, 1).toUpperCase();
+  row.classList.add(loan.status);
+  avatar.textContent = loan.person.slice(0, 1);
   title.textContent = loan.person;
-  note.textContent = loan.note || "Без комментария";
-  meta.textContent = buildMeta(loan);
-  amount.textContent = formatMoney(remaining);
-  status.textContent = getStatusLabel(loan, overdue);
-  status.className = `status-pill ${overdue ? "overdue" : loan.status}`;
-  progress.style.width = `${Math.min(100, progressValue)}%`;
-  payButton.disabled = loan.status === "closed";
-  toggle.textContent = loan.status === "closed" ? "Открыть" : "Закрыть";
+  note.textContent = loan.note;
+  meta.textContent = buildMeta(loan, mode);
+  amount.textContent = formatMoney(getRemaining(loan));
+  status.textContent = getStatusLabel(loan);
+  status.className = `status-pill ${loan.status}`;
 
   return fragment;
 }
 
-function openPaymentDialog(loan) {
-  state.paymentTargetId = loan.id;
-  nodes.paymentHint.textContent = `${loan.person}: остаток ${formatMoney(getRemaining(loan))}`;
-  nodes.paymentAmount.value = getRemaining(loan);
-  nodes.paymentAmount.max = getRemaining(loan);
-  nodes.paymentDialog.showModal();
-  nodes.paymentAmount.focus();
+function renderConfirmation(item) {
+  const fragment = nodes.confirmationTemplate.content.cloneNode(true);
+  const row = fragment.querySelector(".confirm-row");
+  row.dataset.id = item.id;
+  fragment.querySelector(".request-type").textContent = item.type;
+  fragment.querySelector("h3").textContent = item.title;
+  fragment.querySelector("p").textContent = item.description;
+  return fragment;
 }
 
-function buildMeta(loan) {
-  const direction = loan.direction === "lent" ? "Мне должны" : "Я должен";
-  const paid = loan.paid > 0 ? `оплачено ${formatMoney(loan.paid)}` : "платежей нет";
+function buildMeta(loan, mode) {
+  const side = loan.direction === "lent" ? "Я дал" : "Я взял";
   const due = loan.dueDate ? `срок ${formatDate(loan.dueDate)}` : "без срока";
-  return `${direction} · ${paid} · ${due}`;
+  const confirmation = loan.confirmedByOther ? "подтверждено" : "ждет вторую сторону";
+  return mode === "action" ? `${side} · ${getStatusLabel(loan)} · ${due}` : `${side} · ${due} · ${confirmation}`;
 }
 
-function getStatusLabel(loan, overdue) {
-  if (loan.status === "closed") return "Закрыт";
-  if (overdue) return "Просрочен";
-  if (loan.status === "pending") return "Ожидает";
-  return "Активен";
+function getStatusLabel(loan) {
+  const labels = {
+    active: "Активен",
+    overdue: "Просрочен",
+    pending: "Ожидает",
+    closed: "Закрыт",
+  };
+  return labels[loan.status] || "Активен";
+}
+
+function statusWeight(loan) {
+  const weights = { overdue: 0, pending: 1, active: 2, closed: 3 };
+  return weights[loan.status] ?? 4;
+}
+
+function sum(items) {
+  return items.reduce((total, loan) => total + getRemaining(loan), 0);
 }
 
 function getRemaining(loan) {
   return Math.max(0, loan.amount - loan.paid);
 }
 
-function isOverdue(loan) {
-  if (loan.status === "closed" || !loan.dueDate) return false;
-  const due = new Date(`${loan.dueDate}T23:59:59`);
-  return due.getTime() < Date.now();
+function getDaysLeft(loan) {
+  if (!loan.dueDate) return 999;
+  const diff = new Date(`${loan.dueDate}T23:59:59`) - new Date();
+  return Math.ceil(diff / 86400000);
 }
 
 function formatMoney(value) {
-  return `${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(value)} ₽`;
+  const sign = value < 0 ? "- " : "";
+  return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(Math.abs(value))} ₽`;
 }
 
 function formatDate(value) {
