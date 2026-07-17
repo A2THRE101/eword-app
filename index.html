@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f7f4ee" />
-    <title>Eword App 1.0.1</title>
+    <meta name="theme-color" content="#f6f7f2" />
+    <title>Eword Loans 1.1.0</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -12,49 +12,116 @@
     <div class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">Версия 1.0.1</p>
-          <h1>Eword</h1>
+          <p class="eyebrow">Eword 1.1.0</p>
+          <h1>Займы между людьми</h1>
         </div>
-        <button class="icon-button" id="resetDemo" type="button" aria-label="Сбросить демо-данные" title="Сбросить">↺</button>
+        <div class="top-actions" aria-label="Действия">
+          <button class="icon-button" id="exportData" type="button" title="Экспортировать JSON" aria-label="Экспортировать JSON">↓</button>
+          <button class="icon-button" id="resetDemo" type="button" title="Сбросить демо" aria-label="Сбросить демо">↺</button>
+        </div>
       </header>
+
       <main>
-        <section class="summary-panel" aria-label="Сводка долгов">
-          <div class="summary-row primary"><span>Вам должны</span><strong id="totalConfirmed">0 ₽</strong></div>
-          <div class="divider"></div>
-          <div class="summary-row muted"><span>Неподтверждено</span><strong id="totalPending">0 ₽</strong></div>
-        </section>
-        <section class="quick-add" aria-label="Добавить долг">
-          <form id="debtForm">
-            <label><span>Кто должен</span><input id="personInput" name="person" type="text" placeholder="Например, Азиз" autocomplete="off" required /></label>
-            <label><span>Сумма</span><input id="amountInput" name="amount" type="number" min="1" step="1" placeholder="3000" required /></label>
-            <label class="wide"><span>Комментарий</span><input id="noteInput" name="note" type="text" placeholder="За доставку, обед, перевод" autocomplete="off" /></label>
-            <div class="segmented wide" role="group" aria-label="Статус долга">
-              <label><input type="radio" name="status" value="confirmed" checked /><span>Подтверждено</span></label>
-              <label><input type="radio" name="status" value="pending" /><span>Ждёт подтверждения</span></label>
-            </div>
-            <button class="submit-button wide" type="submit">Добавить</button>
-          </form>
-        </section>
-        <section class="content-section">
-          <div class="section-heading">
-            <h2>Долги</h2>
-            <div class="tabs" role="tablist" aria-label="Фильтр долгов">
-              <button class="tab active" type="button" data-filter="all">Все</button>
-              <button class="tab" type="button" data-filter="confirmed">Подтверждено</button>
-              <button class="tab" type="button" data-filter="pending">Ожидают</button>
-            </div>
+        <section class="summary-panel" aria-label="Сводка займов">
+          <div class="summary-main">
+            <span>Активный остаток</span>
+            <strong id="totalOutstanding">0 ₽</strong>
           </div>
-          <div class="debt-list" id="debtList"></div>
-          <p class="empty-state" id="emptyState">Пока долгов нет. Добавьте первый через форму выше.</p>
+          <div class="summary-grid">
+            <div><span>Мне должны</span><strong id="totalReceivable">0 ₽</strong></div>
+            <div><span>Я должен</span><strong id="totalPayable">0 ₽</strong></div>
+            <div><span>Просрочено</span><strong id="totalOverdue">0 ₽</strong></div>
+          </div>
+        </section>
+
+        <section class="workspace">
+          <form id="loanForm" class="loan-form" aria-label="Добавить займ">
+            <div class="segmented wide" role="group" aria-label="Направление займа">
+              <label><input type="radio" name="direction" value="lent" checked /><span>Я дал</span></label>
+              <label><input type="radio" name="direction" value="borrowed" /><span>Я взял</span></label>
+            </div>
+            <label>
+              <span>Человек</span>
+              <input id="personInput" name="person" type="text" placeholder="Например, Азиз" autocomplete="off" required />
+            </label>
+            <label>
+              <span>Сумма</span>
+              <input id="amountInput" name="amount" type="number" min="1" step="1" placeholder="5000" inputmode="numeric" required />
+            </label>
+            <label>
+              <span>Срок возврата</span>
+              <input id="dueDateInput" name="dueDate" type="date" />
+            </label>
+            <label>
+              <span>Статус</span>
+              <select id="statusInput" name="status">
+                <option value="active">Активен</option>
+                <option value="pending">Ждет подтверждения</option>
+                <option value="closed">Закрыт</option>
+              </select>
+            </label>
+            <label class="wide">
+              <span>Комментарий</span>
+              <input id="noteInput" name="note" type="text" placeholder="Перевод, наличные, за поездку" autocomplete="off" />
+            </label>
+            <button class="submit-button wide" type="submit">Добавить займ</button>
+          </form>
+
+          <section class="content-section" aria-label="Список займов">
+            <div class="section-heading">
+              <h2>Журнал</h2>
+              <div class="tabs" role="tablist" aria-label="Фильтр займов">
+                <button class="tab active" type="button" data-filter="all">Все</button>
+                <button class="tab" type="button" data-filter="lent">Мне должны</button>
+                <button class="tab" type="button" data-filter="borrowed">Я должен</button>
+                <button class="tab" type="button" data-filter="overdue">Просрочено</button>
+              </div>
+            </div>
+            <div class="loan-list" id="loanList"></div>
+            <p class="empty-state" id="emptyState">Займов по этому фильтру нет.</p>
+          </section>
         </section>
       </main>
     </div>
-    <template id="debtTemplate">
-      <article class="debt-item">
-        <div class="debt-main"><div class="avatar"></div><div><h3></h3><p></p></div></div>
-        <div class="debt-side"><strong></strong><span class="status-pill"></span><div class="item-actions"><button type="button" data-action="toggle"></button><button type="button" data-action="delete" aria-label="Удалить">×</button></div></div>
+
+    <dialog id="paymentDialog">
+      <form method="dialog" id="paymentForm">
+        <h2>Зафиксировать платеж</h2>
+        <p id="paymentHint"></p>
+        <label>
+          <span>Сумма платежа</span>
+          <input id="paymentAmount" name="paymentAmount" type="number" min="1" step="1" inputmode="numeric" required />
+        </label>
+        <menu>
+          <button type="button" value="cancel" id="cancelPayment">Отмена</button>
+          <button class="submit-button" value="default">Сохранить</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <template id="loanTemplate">
+      <article class="loan-item">
+        <div class="loan-main">
+          <div class="avatar"></div>
+          <div class="loan-copy">
+            <h3></h3>
+            <p></p>
+            <div class="meta-line"></div>
+          </div>
+        </div>
+        <div class="loan-side">
+          <strong></strong>
+          <span class="status-pill"></span>
+          <div class="progress-track"><span></span></div>
+          <div class="item-actions">
+            <button type="button" data-action="pay">Платеж</button>
+            <button type="button" data-action="toggle"></button>
+            <button type="button" data-action="delete" aria-label="Удалить">×</button>
+          </div>
+        </div>
       </article>
     </template>
+
     <script src="./app.js" defer></script>
   </body>
 </html>
