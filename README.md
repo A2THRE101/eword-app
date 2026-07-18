@@ -1,6 +1,6 @@
 # Eword App
 
-Version: `0.2.4`
+Version: `0.2.6`
 
 Eword Mobile Visual Preview is an interactive browser prototype for the future iOS and Android app. It is still a static preview, but its screens and flows are shaped around the mobile product: dashboard, obligations, journal, sorting, and second-party confirmations.
 
@@ -11,8 +11,9 @@ Eword Mobile Visual Preview is an interactive browser prototype for the future i
 - Journal separated by loan type.
 - Sorting by due date, amount, creation date, and status.
 - Manual debt record creation through the centered `+` button.
+- SQL accounting schema that stores money as integer Russian kopecks.
 - Confirmation queue for loans and payments.
-- Profile/settings preview.
+- Profile/settings preview with an in-app update log.
 - Static GitHub Pages deployment via `gh-pages`.
 
 ## Version notes
@@ -22,6 +23,10 @@ Eword Mobile Visual Preview is an interactive browser prototype for the future i
 `0.2.3` adds the centered `+` action in bottom navigation and a manual debt record form.
 
 `0.2.4` updates the manual record form with required obligation type, name, issue date, due date, comment, and formatted amount fields.
+
+`0.2.5` stores debt amounts internally as integer kopecks and keeps ruble formatting only for frontend display.
+
+`0.2.6` applies the approved orange-black visual direction and adds an in-app update log under profile settings.
 
 ## Product direction
 
@@ -39,3 +44,14 @@ Target mobile product:
 3. Journal groups records by debt type and applies the selected sort.
 4. Confirmation requests model actions requiring the second party.
 5. Future mobile app will replace static seed data with synced backend data.
+
+## Accounting storage rule
+
+Frontend users enter and see rubles, for example `1 000,00 ₽`.
+
+Application and SQL storage keep the same value as integer kopecks:
+
+- `1 000,00 ₽` -> `100000`
+- `1 000 000,00 ₽` -> `100000000`
+
+Use `schema.sql` as the first draft of the accounting table.
