@@ -1,12 +1,13 @@
 # Eword App
 
-Version: `0.2.6`
+Version: `0.2.7`
 
 Eword Mobile Visual Preview is an interactive browser prototype for the future iOS and Android app. It is still a static preview, but its screens and flows are shaped around the mobile product: dashboard, obligations, journal, sorting, and second-party confirmations.
 
 ## Included in this preview
 
 - Mobile dashboard with current obligations.
+- Dashboard histogram with monthly debt timeline and net-position trend.
 - Totals for receivables, payables, overdue debt, and pending confirmations.
 - Journal separated by loan type.
 - Sorting by due date, amount, creation date, and status.
@@ -28,6 +29,8 @@ Eword Mobile Visual Preview is an interactive browser prototype for the future i
 
 `0.2.6` applies the approved orange-black visual direction and adds an in-app update log under profile settings.
 
+`0.2.7` adds a dashboard histogram with a monthly timeline and net-position trend line.
+
 ## Product direction
 
 Target mobile product:
@@ -42,8 +45,9 @@ Target mobile product:
 1. User opens Eword on mobile.
 2. Dashboard reads active loans and pending confirmations.
 3. Journal groups records by debt type and applies the selected sort.
-4. Confirmation requests model actions requiring the second party.
-5. Future mobile app will replace static seed data with synced backend data.
+4. Dashboard visualizes monthly debt changes as bars and net position as a trend line.
+5. Confirmation requests model actions requiring the second party.
+6. Future mobile app will replace static seed data with synced backend data.
 
 ## Accounting storage rule
 
