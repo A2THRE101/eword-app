@@ -4,16 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f4f6f3" />
-    <title>Eword Mobile Preview 0.2.2</title>
-    <link rel="manifest" href="./manifest.json?v=0.2.2" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.2" />
+    <title>Eword Mobile Preview 0.2.3</title>
+    <link rel="manifest" href="./manifest.json?v=0.2.3" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.3" />
   </head>
   <body>
     <main class="preview-shell">
       <section class="phone" aria-label="Eword mobile visual preview">
         <header class="app-header">
           <div>
-            <p class="eyebrow">Eword Mobile 0.2.2</p>
+            <p class="eyebrow">Eword Mobile 0.2.3</p>
             <h1 id="screenTitle">Дашборд</h1>
           </div>
           <button class="icon-button" id="syncButton" type="button" title="Синхронизация" aria-label="Синхронизация">↻</button>
@@ -77,6 +77,41 @@
           <div class="stack-list" id="confirmationList"></div>
         </section>
 
+        <section class="screen" id="createScreen" data-screen="create">
+          <form class="entry-form" id="entryForm">
+            <label>
+              <span>Тип записи</span>
+              <select id="entryDirection" required>
+                <option value="lent">Я дал</option>
+                <option value="borrowed">Я взял</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Человек</span>
+              <input id="entryPerson" type="text" placeholder="Имя" autocomplete="off" required />
+            </label>
+
+            <label>
+              <span>Сумма</span>
+              <input id="entryAmount" type="number" min="1" step="1" placeholder="0" inputmode="numeric" required />
+            </label>
+
+            <label>
+              <span>Срок возврата</span>
+              <input id="entryDueDate" type="date" />
+            </label>
+
+            <label>
+              <span>Комментарий</span>
+              <textarea id="entryNote" rows="3" placeholder="За что долг"></textarea>
+            </label>
+
+            <button class="primary-action" type="submit">Создать запись</button>
+            <p class="form-status" id="entryStatus" aria-live="polite"></p>
+          </form>
+        </section>
+
         <section class="screen" id="profileScreen" data-screen="profile">
           <div class="profile-block">
             <div class="profile-avatar">М</div>
@@ -96,6 +131,7 @@
         <nav class="bottom-nav" aria-label="Навигация">
           <button class="active" type="button" data-screen-target="dashboard"><span>⌂</span>Дашборд</button>
           <button type="button" data-screen-target="journal"><span>≡</span>Журнал</button>
+          <button class="create-tab" type="button" data-screen-target="create" aria-label="Создать запись"><span>+</span></button>
           <button type="button" data-screen-target="confirmations"><span>✓</span>Запросы</button>
           <button type="button" data-screen-target="profile"><span>○</span>Профиль</button>
         </nav>
@@ -133,6 +169,6 @@
       </article>
     </template>
 
-    <script src="./app.js?v=0.2.2" defer></script>
+    <script src="./app.js?v=0.2.3" defer></script>
   </body>
 </html>
