@@ -26,7 +26,9 @@ body {
 }
 
 button,
-select {
+select,
+input,
+textarea {
   font: inherit;
 }
 
@@ -383,7 +385,8 @@ h3 {
 }
 
 .notice,
-.profile-block {
+.profile-block,
+.entry-form {
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
@@ -493,13 +496,68 @@ h3 {
   font-size: 13px;
 }
 
+.entry-form {
+  display: grid;
+  gap: 12px;
+}
+
+.entry-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.entry-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.entry-form input,
+.entry-form select,
+.entry-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+  color: var(--ink);
+  outline: none;
+  padding: 12px;
+}
+
+.entry-form textarea {
+  resize: none;
+}
+
+.entry-form input:focus,
+.entry-form select:focus,
+.entry-form textarea:focus {
+  border-color: var(--accent);
+  background: #fff;
+}
+
+.primary-action {
+  height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 900;
+}
+
+.form-status {
+  min-height: 18px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .bottom-nav {
   position: absolute;
   right: 12px;
   bottom: 12px;
   left: 12px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
   border: 1px solid rgba(212, 219, 209, 0.9);
   border-radius: 22px;
@@ -530,6 +588,28 @@ h3 {
 .bottom-nav button.active {
   background: var(--surface-2);
   color: var(--accent);
+}
+
+.bottom-nav .create-tab {
+  align-self: center;
+  justify-self: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  transform: translateY(-10px);
+  box-shadow: 0 14px 28px rgba(46, 111, 85, 0.26);
+}
+
+.bottom-nav .create-tab span {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.bottom-nav .create-tab.active {
+  background: var(--accent);
+  color: #fff;
 }
 
 @keyframes enter {
