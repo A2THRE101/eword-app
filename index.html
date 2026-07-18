@@ -4,16 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f4f6f3" />
-    <title>Eword Mobile Preview 0.2.3</title>
-    <link rel="manifest" href="./manifest.json?v=0.2.3" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.3" />
+    <title>Eword Mobile Preview 0.2.4</title>
+    <link rel="manifest" href="./manifest.json?v=0.2.4" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.4" />
   </head>
   <body>
     <main class="preview-shell">
       <section class="phone" aria-label="Eword mobile visual preview">
         <header class="app-header">
           <div>
-            <p class="eyebrow">Eword Mobile 0.2.3</p>
+            <p class="eyebrow">Eword Mobile 0.2.4</p>
             <h1 id="screenTitle">Дашборд</h1>
           </div>
           <button class="icon-button" id="syncButton" type="button" title="Синхронизация" aria-label="Синхронизация">↻</button>
@@ -51,7 +51,7 @@
             <div class="type-tabs" role="tablist" aria-label="Типы долгов">
               <button class="chip active" type="button" data-filter="all">Все</button>
               <button class="chip" type="button" data-filter="lent">Я дал</button>
-              <button class="chip" type="button" data-filter="borrowed">Я взял</button>
+              <button class="chip" type="button" data-filter="borrowed">Мне дали</button>
               <button class="chip" type="button" data-filter="pending">Ждут</button>
               <button class="chip" type="button" data-filter="closed">Закрытые</button>
             </div>
@@ -79,32 +79,37 @@
 
         <section class="screen" id="createScreen" data-screen="create">
           <form class="entry-form" id="entryForm">
-            <label>
-              <span>Тип записи</span>
+            <label class="form-field">
+              <span>Тип обязательства</span>
               <select id="entryDirection" required>
-                <option value="lent">Я дал</option>
-                <option value="borrowed">Я взял</option>
+                <option value="lent">я дал</option>
+                <option value="borrowed">мне дали</option>
               </select>
             </label>
 
-            <label>
-              <span>Человек</span>
+            <label class="form-field">
+              <span>Имя</span>
               <input id="entryPerson" type="text" placeholder="Имя" autocomplete="off" required />
             </label>
 
-            <label>
-              <span>Сумма</span>
-              <input id="entryAmount" type="number" min="1" step="1" placeholder="0" inputmode="numeric" required />
+            <label class="form-field">
+              <span>Дата выдачи</span>
+              <input id="entryIssueDate" type="date" required />
             </label>
 
-            <label>
-              <span>Срок возврата</span>
-              <input id="entryDueDate" type="date" />
+            <label class="form-field">
+              <span>Срок исполнения</span>
+              <input id="entryDueDate" type="date" required />
             </label>
 
-            <label>
+            <label class="form-field form-field-tall">
               <span>Комментарий</span>
-              <textarea id="entryNote" rows="3" placeholder="За что долг"></textarea>
+              <textarea id="entryNote" rows="4" placeholder="За что долг" required></textarea>
+            </label>
+
+            <label class="form-field">
+              <span>Сумма</span>
+              <input id="entryAmount" type="text" placeholder="1 000 000,00" inputmode="decimal" required />
             </label>
 
             <button class="primary-action" type="submit">Создать запись</button>
@@ -169,6 +174,6 @@
       </article>
     </template>
 
-    <script src="./app.js?v=0.2.3" defer></script>
+    <script src="./app.js?v=0.2.4" defer></script>
   </body>
 </html>
