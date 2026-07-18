@@ -1,6 +1,6 @@
 {
   "name": "eword-app",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "private": true,
   "description": "Mobile visual preview for Eword personal loans app.",
   "scripts": {
