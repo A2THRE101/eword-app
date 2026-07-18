@@ -1,6 +1,6 @@
 # Eword App
 
-Version: `0.2.3`
+Version: `0.2.4`
 
 Eword Mobile Visual Preview is an interactive browser prototype for the future iOS and Android app. It is still a static preview, but its screens and flows are shaped around the mobile product: dashboard, obligations, journal, sorting, and second-party confirmations.
 
@@ -20,6 +20,8 @@ Eword Mobile Visual Preview is an interactive browser prototype for the future i
 `0.2.2` removes the "Upcoming actions" dashboard section to keep the preview focused on obligations and the journal.
 
 `0.2.3` adds the centered `+` action in bottom navigation and a manual debt record form.
+
+`0.2.4` updates the manual record form with required obligation type, name, issue date, due date, comment, and formatted amount fields.
 
 ## Product direction
 
