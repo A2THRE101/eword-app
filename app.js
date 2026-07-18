@@ -1,4 +1,4 @@
-const VERSION = "0.2.3";
+const VERSION = "0.2.4";
 
 const loans = [
   {
@@ -97,6 +97,7 @@ const nodes = {
   entryDirection: document.querySelector("#entryDirection"),
   entryPerson: document.querySelector("#entryPerson"),
   entryAmount: document.querySelector("#entryAmount"),
+  entryIssueDate: document.querySelector("#entryIssueDate"),
   entryDueDate: document.querySelector("#entryDueDate"),
   entryNote: document.querySelector("#entryNote"),
   entryStatus: document.querySelector("#entryStatus"),
@@ -137,6 +138,14 @@ nodes.sortSelect.addEventListener("change", () => {
   render();
 });
 
+nodes.entryAmount.addEventListener("input", () => {
+  const cursorAtEnd = nodes.entryAmount.selectionStart === nodes.entryAmount.value.length;
+  nodes.entryAmount.value = formatAmountInput(nodes.entryAmount.value);
+  if (cursorAtEnd) {
+    nodes.entryAmount.setSelectionRange(nodes.entryAmount.value.length, nodes.entryAmount.value.length);
+  }
+});
+
 nodes.syncButton.addEventListener("click", () => {
   nodes.syncButton.classList.add("spinning");
   nodes.syncState.textContent = "Синхронизация...";
@@ -159,11 +168,13 @@ nodes.entryForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const person = nodes.entryPerson.value.trim();
-  const amount = Number(nodes.entryAmount.value);
+  const amount = parseAmountInput(nodes.entryAmount.value);
+  const issueDate = nodes.entryIssueDate.value;
+  const dueDate = nodes.entryDueDate.value;
   const note = nodes.entryNote.value.trim();
 
-  if (!person || !Number.isFinite(amount) || amount <= 0) {
-    nodes.entryStatus.textContent = "Заполните имя и сумму.";
+  if (!person || !issueDate || !dueDate || !note || !Number.isFinite(amount) || amount <= 0) {
+    nodes.entryStatus.textContent = "Заполните все обязательные поля.";
     return;
   }
 
@@ -173,10 +184,10 @@ nodes.entryForm.addEventListener("submit", (event) => {
     direction: nodes.entryDirection.value,
     amount,
     paid: 0,
-    dueDate: nodes.entryDueDate.value,
+    dueDate,
     status: "pending",
-    note: note || "Новая запись",
-    createdAt: new Date().toISOString().slice(0, 10),
+    note,
+    createdAt: issueDate,
     confirmedByOther: false,
   };
 
@@ -300,7 +311,7 @@ function renderConfirmation(item) {
 }
 
 function buildMeta(loan, mode) {
-  const side = loan.direction === "lent" ? "Я дал" : "Я взял";
+  const side = loan.direction === "lent" ? "Я дал" : "Мне дали";
   const due = loan.dueDate ? `срок ${formatDate(loan.dueDate)}` : "без срока";
   const confirmation = loan.confirmedByOther ? "подтверждено" : "ждет вторую сторону";
   return mode === "action" ? `${side} · ${getStatusLabel(loan)} · ${due}` : `${side} · ${due} · ${confirmation}`;
@@ -329,9 +340,25 @@ function getRemaining(loan) {
   return Math.max(0, loan.amount - loan.paid);
 }
 
+function parseAmountInput(value) {
+  const normalized = value.replace(/\s/g, "").replace(",", ".");
+  return Number(normalized);
+}
+
+function formatAmountInput(value) {
+  const normalized = value.replace(/[^\d,]/g, "");
+  const [rawInteger, rawDecimal = ""] = normalized.split(",");
+  const integer = rawInteger.replace(/^0+(?=\d)/, "");
+  const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const decimal = rawDecimal.slice(0, 2);
+
+  if (normalized.includes(",")) return `${grouped || "0"},${decimal}`;
+  return grouped;
+}
+
 function formatMoney(value) {
   const sign = value < 0 ? "- " : "";
-  return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(Math.abs(value))} ₽`;
+  return `${sign}${new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(value))} ₽`;
 }
 
 function formatDate(value) {
