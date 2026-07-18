@@ -1,4 +1,4 @@
-const VERSION = "0.2.0";
+const VERSION = "0.2.2";
 
 const loans = [
   {
@@ -95,7 +95,6 @@ const nodes = {
   sortSelect: document.querySelector("#sortSelect"),
   loanTemplate: document.querySelector("#loanRowTemplate"),
   confirmationTemplate: document.querySelector("#confirmationTemplate"),
-  actionList: document.querySelector("#actionList"),
   journalList: document.querySelector("#journalList"),
   journalEmpty: document.querySelector("#journalEmpty"),
   confirmationList: document.querySelector("#confirmationList"),
@@ -193,13 +192,6 @@ function renderDashboard() {
   nodes.borrowedTotal.textContent = formatMoney(borrowed);
   nodes.overdueTotal.textContent = formatMoney(overdue);
   nodes.pendingCount.textContent = String(pending);
-
-  const actions = loans
-    .filter((loan) => loan.status === "overdue" || loan.status === "pending" || getDaysLeft(loan) <= 7)
-    .sort((a, b) => statusWeight(a) - statusWeight(b))
-    .slice(0, 3);
-
-  nodes.actionList.replaceChildren(...actions.map((loan) => renderLoanRow(loan, "action")));
 }
 
 function renderJournal() {
@@ -211,7 +203,7 @@ function renderJournal() {
     return loan.direction === state.filter;
   });
 
-  const sorted = [...filtered].sort((a, b) => {
+  const sorted = filtered.toSorted((a, b) => {
     if (state.sort === "amount") return getRemaining(b) - getRemaining(a);
     if (state.sort === "created") return new Date(b.createdAt) - new Date(a.createdAt);
     if (state.sort === "status") return statusWeight(a) - statusWeight(b);
@@ -286,12 +278,6 @@ function sum(items) {
 
 function getRemaining(loan) {
   return Math.max(0, loan.amount - loan.paid);
-}
-
-function getDaysLeft(loan) {
-  if (!loan.dueDate) return 999;
-  const diff = new Date(`${loan.dueDate}T23:59:59`) - new Date();
-  return Math.ceil(diff / 86400000);
 }
 
 function formatMoney(value) {
