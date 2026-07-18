@@ -385,8 +385,7 @@ h3 {
 }
 
 .notice,
-.profile-block,
-.entry-form {
+.profile-block {
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
@@ -498,44 +497,66 @@ h3 {
 
 .entry-form {
   display: grid;
+  gap: 9px;
+}
+
+.form-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  min-height: 58px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 10px 12px;
 }
 
-.entry-form label {
+.form-field-tall {
   display: grid;
-  gap: 7px;
+  align-items: start;
+  gap: 8px;
+  padding: 12px;
 }
 
-.entry-form label span {
+.form-field span {
+  flex: 0 0 auto;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 850;
 }
 
-.entry-form input,
-.entry-form select,
-.entry-form textarea {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-2);
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: min(100%, 190px);
+  border: 0;
+  background: transparent;
   color: var(--ink);
   outline: none;
-  padding: 12px;
+  padding: 0;
+  text-align: right;
+  font-weight: 800;
+}
+
+.form-field textarea {
+  width: 100%;
+  min-height: 92px;
+  text-align: left;
+  line-height: 1.35;
 }
 
 .entry-form textarea {
   resize: none;
 }
 
-.entry-form input:focus,
-.entry-form select:focus,
-.entry-form textarea:focus {
+.form-field:focus-within {
   border-color: var(--accent);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .primary-action {
+  margin-top: 3px;
   height: 48px;
   border: 0;
   border-radius: 14px;
