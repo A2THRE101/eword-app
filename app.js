@@ -1,12 +1,12 @@
-const VERSION = "0.2.4";
+const VERSION = "0.2.6";
 
 const loans = [
   {
     id: "loan-1",
     person: "Азамат",
     direction: "lent",
-    amount: 12000,
-    paid: 4000,
+    amountKopecks: 1200000,
+    paidKopecks: 400000,
     dueDate: "2026-07-22",
     status: "active",
     note: "Бронь билетов",
@@ -17,8 +17,8 @@ const loans = [
     id: "loan-2",
     person: "Мурад",
     direction: "borrowed",
-    amount: 5000,
-    paid: 0,
+    amountKopecks: 500000,
+    paidKopecks: 0,
     dueDate: "2026-07-16",
     status: "overdue",
     note: "Наличные до зарплаты",
@@ -29,8 +29,8 @@ const loans = [
     id: "loan-3",
     person: "Руслан",
     direction: "lent",
-    amount: 3000,
-    paid: 0,
+    amountKopecks: 300000,
+    paidKopecks: 0,
     dueDate: "2026-07-27",
     status: "pending",
     note: "Ждет подтверждения перевода",
@@ -41,8 +41,8 @@ const loans = [
     id: "loan-4",
     person: "Сабина",
     direction: "borrowed",
-    amount: 18000,
-    paid: 9000,
+    amountKopecks: 1800000,
+    paidKopecks: 900000,
     dueDate: "2026-08-02",
     status: "active",
     note: "Оплата ремонта",
@@ -53,8 +53,8 @@ const loans = [
     id: "loan-5",
     person: "Тимур",
     direction: "lent",
-    amount: 7000,
-    paid: 7000,
+    amountKopecks: 700000,
+    paidKopecks: 700000,
     dueDate: "2026-07-11",
     status: "closed",
     note: "Закрыто двумя сторонами",
@@ -168,12 +168,12 @@ nodes.entryForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const person = nodes.entryPerson.value.trim();
-  const amount = parseAmountInput(nodes.entryAmount.value);
+  const amountKopecks = parseAmountToKopecks(nodes.entryAmount.value);
   const issueDate = nodes.entryIssueDate.value;
   const dueDate = nodes.entryDueDate.value;
   const note = nodes.entryNote.value.trim();
 
-  if (!person || !issueDate || !dueDate || !note || !Number.isFinite(amount) || amount <= 0) {
+  if (!person || !issueDate || !dueDate || !note || !Number.isInteger(amountKopecks) || amountKopecks <= 0) {
     nodes.entryStatus.textContent = "Заполните все обязательные поля.";
     return;
   }
@@ -182,8 +182,8 @@ nodes.entryForm.addEventListener("submit", (event) => {
     id: `loan-${Date.now()}`,
     person,
     direction: nodes.entryDirection.value,
-    amount,
-    paid: 0,
+    amountKopecks,
+    paidKopecks: 0,
     dueDate,
     status: "pending",
     note,
@@ -195,7 +195,7 @@ nodes.entryForm.addEventListener("submit", (event) => {
   confirmations.unshift({
     id: `confirm-${Date.now()}`,
     type: "Новый займ",
-    title: `${person} подтверждает ${formatMoney(amount)}`,
+    title: `${person} подтверждает ${formatMoney(amountKopecks)}`,
     description: "Запись создана вручную и ожидает подтверждения второй стороны.",
   });
 
@@ -264,7 +264,7 @@ function renderJournal() {
   });
 
   const sorted = filtered.toSorted((a, b) => {
-    if (state.sort === "amount") return getRemaining(b) - getRemaining(a);
+    if (state.sort === "amount") return getRemainingKopecks(b) - getRemainingKopecks(a);
     if (state.sort === "created") return new Date(b.createdAt) - new Date(a.createdAt);
     if (state.sort === "status") return statusWeight(a) - statusWeight(b);
     return new Date(a.dueDate || "2099-12-31") - new Date(b.dueDate || "2099-12-31");
@@ -293,7 +293,7 @@ function renderLoanRow(loan, mode) {
   title.textContent = loan.person;
   note.textContent = loan.note;
   meta.textContent = buildMeta(loan, mode);
-  amount.textContent = formatMoney(getRemaining(loan));
+  amount.textContent = formatMoney(getRemainingKopecks(loan));
   status.textContent = getStatusLabel(loan);
   status.className = `status-pill ${loan.status}`;
 
@@ -333,16 +333,19 @@ function statusWeight(loan) {
 }
 
 function sum(items) {
-  return items.reduce((total, loan) => total + getRemaining(loan), 0);
+  return items.reduce((total, loan) => total + getRemainingKopecks(loan), 0);
 }
 
-function getRemaining(loan) {
-  return Math.max(0, loan.amount - loan.paid);
+function getRemainingKopecks(loan) {
+  return Math.max(0, loan.amountKopecks - loan.paidKopecks);
 }
 
-function parseAmountInput(value) {
-  const normalized = value.replace(/\s/g, "").replace(",", ".");
-  return Number(normalized);
+function parseAmountToKopecks(value) {
+  const normalized = value.replace(/\s/g, "").replace(".", ",");
+  if (!/^\d+(,\d{0,2})?$/.test(normalized)) return Number.NaN;
+
+  const [rubles, kopecks = ""] = normalized.split(",");
+  return Number(rubles) * 100 + Number(kopecks.padEnd(2, "0"));
 }
 
 function formatAmountInput(value) {
@@ -356,9 +359,10 @@ function formatAmountInput(value) {
   return grouped;
 }
 
-function formatMoney(value) {
-  const sign = value < 0 ? "- " : "";
-  return `${sign}${new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(value))} ₽`;
+function formatMoney(kopecks) {
+  const sign = kopecks < 0 ? "- " : "";
+  const rubles = Math.abs(kopecks) / 100;
+  return `${sign}${new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(rubles)} ₽`;
 }
 
 function formatDate(value) {
