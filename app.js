@@ -1,4 +1,4 @@
-const VERSION = "0.2.2";
+const VERSION = "0.2.3";
 
 const loans = [
   {
@@ -93,6 +93,13 @@ const nodes = {
   filterButtons: [...document.querySelectorAll("[data-filter]")],
   metricButtons: [...document.querySelectorAll("[data-open-filter]")],
   sortSelect: document.querySelector("#sortSelect"),
+  entryForm: document.querySelector("#entryForm"),
+  entryDirection: document.querySelector("#entryDirection"),
+  entryPerson: document.querySelector("#entryPerson"),
+  entryAmount: document.querySelector("#entryAmount"),
+  entryDueDate: document.querySelector("#entryDueDate"),
+  entryNote: document.querySelector("#entryNote"),
+  entryStatus: document.querySelector("#entryStatus"),
   loanTemplate: document.querySelector("#loanRowTemplate"),
   confirmationTemplate: document.querySelector("#confirmationTemplate"),
   journalList: document.querySelector("#journalList"),
@@ -148,6 +155,47 @@ nodes.confirmationList.addEventListener("click", (event) => {
   window.setTimeout(() => row.remove(), 220);
 });
 
+nodes.entryForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const person = nodes.entryPerson.value.trim();
+  const amount = Number(nodes.entryAmount.value);
+  const note = nodes.entryNote.value.trim();
+
+  if (!person || !Number.isFinite(amount) || amount <= 0) {
+    nodes.entryStatus.textContent = "Заполните имя и сумму.";
+    return;
+  }
+
+  const loan = {
+    id: `loan-${Date.now()}`,
+    person,
+    direction: nodes.entryDirection.value,
+    amount,
+    paid: 0,
+    dueDate: nodes.entryDueDate.value,
+    status: "pending",
+    note: note || "Новая запись",
+    createdAt: new Date().toISOString().slice(0, 10),
+    confirmedByOther: false,
+  };
+
+  loans.unshift(loan);
+  confirmations.unshift({
+    id: `confirm-${Date.now()}`,
+    type: "Новый займ",
+    title: `${person} подтверждает ${formatMoney(amount)}`,
+    description: "Запись создана вручную и ожидает подтверждения второй стороны.",
+  });
+
+  nodes.entryForm.reset();
+  nodes.entryStatus.textContent = "Запись создана и добавлена в журнал.";
+  state.filter = "all";
+  state.sort = "created";
+  nodes.sortSelect.value = "created";
+  setScreen("journal");
+});
+
 render();
 
 function setScreen(screen) {
@@ -167,6 +215,7 @@ function renderScreen() {
     dashboard: "Дашборд",
     journal: "Журнал",
     confirmations: "Подтверждения",
+    create: "Новая запись",
     profile: "Профиль",
   };
 
