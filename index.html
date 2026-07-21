@@ -4,17 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0b0a" />
-    <title>Eword Mobile Preview 0.2.8</title>
-    <link rel="manifest" href="./manifest.json?v=0.2.8" />
+    <title>Eword Mobile Preview 0.2.9</title>
+    <link rel="manifest" href="./manifest.json?v=0.2.9" />
     <link rel="stylesheet" href="./eword-theme-0.2.6.css" />
     <link rel="stylesheet" href="./eword-chart-0.2.8.css" />
+    <link rel="stylesheet" href="./eword-ledger-0.2.9.css" />
   </head>
   <body>
     <main class="preview-shell">
       <section class="phone" aria-label="Eword mobile visual preview">
         <header class="app-header">
           <div>
-            <p class="eyebrow">Eword Mobile 0.2.8</p>
+            <p class="eyebrow">Eword Mobile 0.2.9</p>
             <h1 id="screenTitle">Дашборд</h1>
           </div>
           <button class="icon-button" id="syncButton" type="button" title="Синхронизация" aria-label="Синхронизация">↻</button>
@@ -98,6 +99,20 @@
           <p class="empty-state" id="journalEmpty">Записей по этому фильтру нет.</p>
         </section>
 
+        <section class="screen" id="personScreen" data-screen="person">
+          <button class="text-button ledger-back" id="backToJournal" type="button">← Назад</button>
+          <section class="ledger-summary" aria-label="Итоги сверки">
+            <div class="ledger-names">
+              <strong id="personOwnerName">Мурад</strong>
+              <span>↔</span>
+              <strong id="personCounterpartyName">Азамат</strong>
+            </div>
+            <p id="personBalance">Операций пока нет</p>
+          </section>
+          <div class="ledger-groups" id="ledgerGroups"></div>
+          <p class="empty-state" id="ledgerEmpty">С этим человеком пока нет операций.</p>
+        </section>
+
         <section class="screen" id="confirmationsScreen" data-screen="confirmations">
           <div class="notice">
             <strong>Подтверждения второй стороны</strong>
@@ -163,6 +178,7 @@
           <section class="update-log" aria-label="Журнал обновлений приложения">
             <h2>Журнал обновлений</h2>
             <ol>
+              <li><strong>0.2.9</strong><span>Добавлена сверка по человеку: две стороны операций, валютные группы и отдельные итоги по валютам.</span></li>
               <li><strong>0.2.8</strong><span>Диаграмма долгов теперь строится из реальных записей и пересчитывается после создания займа.</span></li>
               <li><strong>0.2.7</strong><span>Добавлена гистограмма с таймлайном и линией изменения долга в дашборде.</span></li>
               <li><strong>0.2.6</strong><span>Черно-оранжевая тема Варианта A и журнал обновлений в настройках.</span></li>
@@ -217,6 +233,6 @@
       </article>
     </template>
 
-    <script src="./app.js?v=0.2.8" defer></script>
+    <script src="./app.js?v=0.2.9" defer></script>
   </body>
 </html>
