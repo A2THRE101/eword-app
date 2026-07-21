@@ -1,4 +1,11 @@
-const VERSION = "0.2.8";
+const VERSION = "0.2.9";
+const OWNER_NAME = "Мурад";
+
+const currencyMeta = {
+  RUB: { title: "Рубли", symbol: "₽", fractionDigits: 2 },
+  AED: { title: "Дирхамы", symbol: "AED", fractionDigits: 2 },
+  USD: { title: "Доллары", symbol: "$", fractionDigits: 2 },
+};
 
 const loans = [
   {
@@ -7,6 +14,7 @@ const loans = [
     direction: "lent",
     amountKopecks: 1200000,
     paidKopecks: 400000,
+    currency: "RUB",
     dueDate: "2026-07-22",
     status: "active",
     note: "Бронь билетов",
@@ -19,6 +27,7 @@ const loans = [
     direction: "borrowed",
     amountKopecks: 500000,
     paidKopecks: 0,
+    currency: "RUB",
     dueDate: "2026-07-16",
     status: "overdue",
     note: "Наличные до зарплаты",
@@ -31,6 +40,7 @@ const loans = [
     direction: "lent",
     amountKopecks: 300000,
     paidKopecks: 0,
+    currency: "RUB",
     dueDate: "2026-07-27",
     status: "pending",
     note: "Ждет подтверждения перевода",
@@ -43,6 +53,7 @@ const loans = [
     direction: "borrowed",
     amountKopecks: 1800000,
     paidKopecks: 900000,
+    currency: "RUB",
     dueDate: "2026-08-02",
     status: "active",
     note: "Оплата ремонта",
@@ -55,11 +66,26 @@ const loans = [
     direction: "lent",
     amountKopecks: 700000,
     paidKopecks: 700000,
+    currency: "RUB",
     dueDate: "2026-07-11",
     status: "closed",
     note: "Закрыто двумя сторонами",
     createdAt: "2026-06-20",
     confirmedByOther: true,
+  },
+];
+
+const manualLedgerEvents = [
+  {
+    id: "event-aed-1",
+    person: "Азамат",
+    from: "me",
+    to: "person",
+    amountMinor: 100000,
+    currency: "AED",
+    type: "loan",
+    date: "2026-07-10",
+    note: "Наличные в дирхамах",
   },
 ];
 
@@ -80,6 +106,8 @@ const confirmations = [
 
 const state = {
   screen: "dashboard",
+  previousScreen: "dashboard",
+  selectedPerson: "Азамат",
   filter: "all",
   sort: "due",
 };
@@ -115,6 +143,12 @@ const nodes = {
   trendLinePath: document.querySelector("#trendLinePath"),
   trendLineShadow: document.querySelector("#trendLineShadow"),
   barTrack: document.querySelector("#barTrack"),
+  backToJournal: document.querySelector("#backToJournal"),
+  personOwnerName: document.querySelector("#personOwnerName"),
+  personCounterpartyName: document.querySelector("#personCounterpartyName"),
+  personBalance: document.querySelector("#personBalance"),
+  ledgerGroups: document.querySelector("#ledgerGroups"),
+  ledgerEmpty: document.querySelector("#ledgerEmpty"),
 };
 
 document.title = `Eword Mobile Preview ${VERSION}`;
@@ -141,6 +175,14 @@ nodes.sortSelect.addEventListener("change", () => {
   state.sort = nodes.sortSelect.value;
   render();
 });
+
+nodes.journalList.addEventListener("click", (event) => {
+  const row = event.target.closest(".loan-row");
+  if (!row?.dataset.person) return;
+  openPersonLedger(row.dataset.person);
+});
+
+nodes.backToJournal.addEventListener("click", () => setScreen(state.previousScreen || "journal"));
 
 nodes.entryAmount.addEventListener("input", () => {
   const cursorAtEnd = nodes.entryAmount.selectionStart === nodes.entryAmount.value.length;
@@ -188,6 +230,7 @@ nodes.entryForm.addEventListener("submit", (event) => {
     direction: nodes.entryDirection.value,
     amountKopecks,
     paidKopecks: 0,
+    currency: "RUB",
     dueDate,
     status: "pending",
     note,
@@ -199,7 +242,7 @@ nodes.entryForm.addEventListener("submit", (event) => {
   confirmations.unshift({
     id: `confirm-${Date.now()}`,
     type: "Новый займ",
-    title: `${person} подтверждает ${formatMoney(amountKopecks)}`,
+    title: `${person} подтверждает ${formatMoney(amountKopecks, "RUB")}`,
     description: "Запись создана вручную и ожидает подтверждения второй стороны.",
   });
 
@@ -218,12 +261,19 @@ function setScreen(screen) {
   render();
 }
 
+function openPersonLedger(person) {
+  state.selectedPerson = person;
+  state.previousScreen = state.screen === "person" ? state.previousScreen : state.screen;
+  setScreen("person");
+}
+
 function render() {
   renderScreen();
   renderDashboard();
   renderDebtTimeline();
   renderJournal();
   renderConfirmations();
+  renderPersonLedger();
 }
 
 function renderScreen() {
@@ -233,6 +283,7 @@ function renderScreen() {
     confirmations: "Подтверждения",
     create: "Новая запись",
     profile: "Профиль",
+    person: state.selectedPerson,
   };
 
   nodes.screenTitle.textContent = titles[state.screen];
@@ -252,10 +303,10 @@ function renderDashboard() {
   const overdue = sum(activeLoans.filter((loan) => loan.status === "overdue"));
   const pending = loans.filter((loan) => loan.status === "pending").length + confirmations.length;
 
-  nodes.netPosition.textContent = formatMoney(lent - borrowed);
-  nodes.lentTotal.textContent = formatMoney(lent);
-  nodes.borrowedTotal.textContent = formatMoney(borrowed);
-  nodes.overdueTotal.textContent = formatMoney(overdue);
+  nodes.netPosition.textContent = formatMoney(lent - borrowed, "RUB");
+  nodes.lentTotal.textContent = formatMoney(lent, "RUB");
+  nodes.borrowedTotal.textContent = formatMoney(borrowed, "RUB");
+  nodes.overdueTotal.textContent = formatMoney(overdue, "RUB");
   nodes.pendingCount.textContent = String(pending);
 }
 
@@ -263,7 +314,7 @@ function renderDebtTimeline() {
   const points = buildDebtTimeline(loans.filter((loan) => loan.status !== "closed"));
   const total = points.at(-1)?.positionKopecks ?? 0;
 
-  nodes.timelineTotal.textContent = formatMoney(total);
+  nodes.timelineTotal.textContent = formatMoney(total, "RUB");
   nodes.timelineTotal.classList.toggle("negative", total < 0);
   nodes.timelineTotal.classList.toggle("positive", total > 0);
 
@@ -294,13 +345,13 @@ function renderDebtTimeline() {
 function renderTimelineColumn(point, maxDelta) {
   const column = document.createElement("div");
   column.className = `bar-column ${point.deltaKopecks < 0 ? "negative" : point.deltaKopecks > 0 ? "positive" : "zero"}`;
-  column.title = `${point.label}: изменение ${formatMoney(point.deltaKopecks)}, позиция ${formatMoney(point.positionKopecks)}`;
+  column.title = `${point.label}: изменение ${formatMoney(point.deltaKopecks, "RUB")}, позиция ${formatMoney(point.positionKopecks, "RUB")}`;
 
   const bar = document.createElement("i");
   bar.style.height = `${Math.max(14, Math.round((Math.abs(point.deltaKopecks) / maxDelta) * 82))}px`;
 
   const amount = document.createElement("strong");
-  amount.textContent = formatCompactMoney(point.deltaKopecks);
+  amount.textContent = formatCompactMoney(point.deltaKopecks, "RUB");
 
   const label = document.createElement("span");
   label.textContent = point.shortLabel;
@@ -361,6 +412,53 @@ function renderConfirmations() {
   nodes.confirmationList.replaceChildren(...confirmations.map(renderConfirmation));
 }
 
+function renderPersonLedger() {
+  const person = state.selectedPerson;
+  const groups = groupLedgerByCurrency(getLedgerEventsForPerson(person));
+
+  nodes.personOwnerName.textContent = OWNER_NAME;
+  nodes.personCounterpartyName.textContent = person;
+  nodes.personBalance.textContent = groups.length ? buildLedgerSummary(groups, person).join(" · ") : "Операций пока нет";
+  nodes.ledgerGroups.replaceChildren(...groups.map((group) => renderCurrencyLedger(group, person)));
+  nodes.ledgerEmpty.classList.toggle("visible", groups.length === 0);
+}
+
+function renderCurrencyLedger(group, person) {
+  const section = document.createElement("section");
+  section.className = "ledger-currency";
+
+  const heading = document.createElement("h2");
+  heading.textContent = getCurrencyTitle(group.currency);
+
+  const grid = document.createElement("div");
+  grid.className = "ledger-grid";
+  grid.append(...group.events.map((item) => renderLedgerEntry(item)));
+
+  const summary = document.createElement("p");
+  summary.className = "ledger-total";
+  summary.textContent = formatLedgerBalance(group.balanceMinor, group.currency, person);
+
+  section.append(heading, grid, summary);
+  return section;
+}
+
+function renderLedgerEntry(item) {
+  const article = document.createElement("article");
+  article.className = `ledger-entry ${item.from === "me" ? "from-owner" : "from-person"}`;
+
+  const meta = document.createElement("span");
+  meta.textContent = `${formatDate(item.date)} · ${getEventLabel(item.type)}`;
+
+  const amount = document.createElement("strong");
+  amount.textContent = formatMoney(item.amountMinor, item.currency);
+
+  const note = document.createElement("p");
+  note.textContent = item.note || "Без комментария";
+
+  article.append(meta, amount, note);
+  return article;
+}
+
 function renderLoanRow(loan, mode) {
   const fragment = nodes.loanTemplate.content.cloneNode(true);
   const row = fragment.querySelector(".loan-row");
@@ -372,11 +470,14 @@ function renderLoanRow(loan, mode) {
   const status = fragment.querySelector(".status-pill");
 
   row.classList.add(loan.status);
+  row.dataset.person = loan.person;
+  row.setAttribute("role", "button");
+  row.tabIndex = 0;
   avatar.textContent = loan.person.slice(0, 1);
   title.textContent = loan.person;
   note.textContent = loan.note;
   meta.textContent = buildMeta(loan, mode);
-  amount.textContent = formatMoney(getRemainingKopecks(loan));
+  amount.textContent = formatMoney(getRemainingKopecks(loan), loan.currency || "RUB");
   status.textContent = getStatusLabel(loan);
   status.className = `status-pill ${loan.status}`;
 
@@ -391,6 +492,70 @@ function renderConfirmation(item) {
   fragment.querySelector("h3").textContent = item.title;
   fragment.querySelector("p").textContent = item.description;
   return fragment;
+}
+
+function getLedgerEventsForPerson(person) {
+  return [...buildLoanLedgerEvents(), ...manualLedgerEvents]
+    .filter((item) => item.person === person)
+    .toSorted((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+function buildLoanLedgerEvents() {
+  return loans.flatMap((loan) => {
+    const currency = loan.currency || "RUB";
+    const events = [
+      {
+        id: `${loan.id}-principal`,
+        person: loan.person,
+        from: loan.direction === "lent" ? "me" : "person",
+        to: loan.direction === "lent" ? "person" : "me",
+        amountMinor: loan.amountKopecks,
+        currency,
+        type: "loan",
+        date: loan.createdAt,
+        note: loan.note,
+      },
+    ];
+
+    if (loan.paidKopecks > 0) {
+      events.push({
+        id: `${loan.id}-repayment`,
+        person: loan.person,
+        from: loan.direction === "lent" ? "person" : "me",
+        to: loan.direction === "lent" ? "me" : "person",
+        amountMinor: loan.paidKopecks,
+        currency,
+        type: "repayment",
+        date: loan.dueDate,
+        note: "Частичный возврат",
+      });
+    }
+
+    return events;
+  });
+}
+
+function groupLedgerByCurrency(events) {
+  const groups = new Map();
+
+  events.forEach((item) => {
+    const group = groups.get(item.currency) ?? { currency: item.currency, events: [], balanceMinor: 0 };
+    group.events.push(item);
+    group.balanceMinor += item.from === "me" ? item.amountMinor : -item.amountMinor;
+    groups.set(item.currency, group);
+  });
+
+  return [...groups.values()].filter((group) => group.events.length > 0);
+}
+
+function buildLedgerSummary(groups, person) {
+  return groups.map((group) => formatLedgerBalance(group.balanceMinor, group.currency, person));
+}
+
+function formatLedgerBalance(balanceMinor, currency, person) {
+  if (balanceMinor > 0) return `${person} должен ${OWNER_NAME} ${formatMoney(balanceMinor, currency)}`;
+  if (balanceMinor < 0) return `${OWNER_NAME} должен ${person} ${formatMoney(Math.abs(balanceMinor), currency)}`;
+  return `${OWNER_NAME} и ${person}: закрыто ${formatMoney(0, currency)}`;
 }
 
 function buildMeta(loan, mode) {
@@ -408,6 +573,14 @@ function getStatusLabel(loan) {
     closed: "Закрыт",
   };
   return labels[loan.status] || "Активен";
+}
+
+function getEventLabel(type) {
+  const labels = {
+    loan: "Передача",
+    repayment: "Возврат",
+  };
+  return labels[type] || "Операция";
 }
 
 function statusWeight(loan) {
@@ -442,18 +615,28 @@ function formatAmountInput(value) {
   return grouped;
 }
 
-function formatMoney(kopecks) {
-  const sign = kopecks < 0 ? "- " : "";
-  const rubles = Math.abs(kopecks) / 100;
-  return `${sign}${new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(rubles)} ₽`;
+function formatMoney(amountMinor, currency = "RUB") {
+  const meta = currencyMeta[currency] || currencyMeta.RUB;
+  const sign = amountMinor < 0 ? "- " : "";
+  const amount = Math.abs(amountMinor) / 100;
+  const value = new Intl.NumberFormat("ru-RU", {
+    minimumFractionDigits: meta.fractionDigits,
+    maximumFractionDigits: meta.fractionDigits,
+  }).format(amount);
+  return currency === "RUB" ? `${sign}${value} ${meta.symbol}` : `${sign}${value} ${currency}`;
 }
 
-function formatCompactMoney(kopecks) {
-  const sign = kopecks < 0 ? "-" : kopecks > 0 ? "+" : "";
-  const rubles = Math.abs(kopecks) / 100;
-  if (rubles >= 1000000) return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 }).format(rubles / 1000000)} млн ₽`;
-  if (rubles >= 1000) return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(rubles / 1000)} тыс ₽`;
-  return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(rubles)} ₽`;
+function formatCompactMoney(amountMinor, currency = "RUB") {
+  const sign = amountMinor < 0 ? "-" : amountMinor > 0 ? "+" : "";
+  const amount = Math.abs(amountMinor) / 100;
+  const suffix = currency === "RUB" ? "₽" : currency;
+  if (amount >= 1000000) return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 }).format(amount / 1000000)} млн ${suffix}`;
+  if (amount >= 1000) return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(amount / 1000)} тыс ${suffix}`;
+  return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(amount)} ${suffix}`;
+}
+
+function getCurrencyTitle(currency) {
+  return currencyMeta[currency]?.title || currency;
 }
 
 function formatDate(value) {
