@@ -1,4 +1,4 @@
-const VERSION = "0.2.6";
+const VERSION = "0.2.8";
 
 const loans = [
   {
@@ -111,6 +111,10 @@ const nodes = {
   borrowedTotal: document.querySelector("#borrowedTotal"),
   overdueTotal: document.querySelector("#overdueTotal"),
   pendingCount: document.querySelector("#pendingCount"),
+  timelineTotal: document.querySelector("#timelineTotal"),
+  trendLinePath: document.querySelector("#trendLinePath"),
+  trendLineShadow: document.querySelector("#trendLineShadow"),
+  barTrack: document.querySelector("#barTrack"),
 };
 
 document.title = `Eword Mobile Preview ${VERSION}`;
@@ -217,6 +221,7 @@ function setScreen(screen) {
 function render() {
   renderScreen();
   renderDashboard();
+  renderDebtTimeline();
   renderJournal();
   renderConfirmations();
 }
@@ -252,6 +257,84 @@ function renderDashboard() {
   nodes.borrowedTotal.textContent = formatMoney(borrowed);
   nodes.overdueTotal.textContent = formatMoney(overdue);
   nodes.pendingCount.textContent = String(pending);
+}
+
+function renderDebtTimeline() {
+  const points = buildDebtTimeline(loans.filter((loan) => loan.status !== "closed"));
+  const total = points.at(-1)?.positionKopecks ?? 0;
+
+  nodes.timelineTotal.textContent = formatMoney(total);
+  nodes.timelineTotal.classList.toggle("negative", total < 0);
+  nodes.timelineTotal.classList.toggle("positive", total > 0);
+
+  if (points.length === 0) {
+    nodes.barTrack.replaceChildren();
+    nodes.trendLinePath.setAttribute("points", "");
+    nodes.trendLineShadow.setAttribute("points", "");
+    return;
+  }
+
+  const maxDelta = Math.max(...points.map((point) => Math.abs(point.deltaKopecks)), 1);
+  const lineValues = points.map((point) => point.positionKopecks);
+  const minValue = Math.min(0, ...lineValues);
+  const maxValue = Math.max(0, ...lineValues);
+  const valueRange = maxValue - minValue || 1;
+  const linePoints = points.map((point, index) => {
+    const x = points.length === 1 ? 150 : (index / (points.length - 1)) * 300;
+    const y = 124 - ((point.positionKopecks - minValue) / valueRange) * 112;
+    return `${roundChartNumber(x)},${roundChartNumber(y)}`;
+  }).join(" ");
+
+  nodes.trendLinePath.setAttribute("points", linePoints);
+  nodes.trendLineShadow.setAttribute("points", linePoints);
+  nodes.barTrack.style.gridTemplateColumns = `repeat(${points.length}, minmax(0, 1fr))`;
+  nodes.barTrack.replaceChildren(...points.map((point) => renderTimelineColumn(point, maxDelta)));
+}
+
+function renderTimelineColumn(point, maxDelta) {
+  const column = document.createElement("div");
+  column.className = `bar-column ${point.deltaKopecks < 0 ? "negative" : point.deltaKopecks > 0 ? "positive" : "zero"}`;
+  column.title = `${point.label}: изменение ${formatMoney(point.deltaKopecks)}, позиция ${formatMoney(point.positionKopecks)}`;
+
+  const bar = document.createElement("i");
+  bar.style.height = `${Math.max(14, Math.round((Math.abs(point.deltaKopecks) / maxDelta) * 82))}px`;
+
+  const amount = document.createElement("strong");
+  amount.textContent = formatCompactMoney(point.deltaKopecks);
+
+  const label = document.createElement("span");
+  label.textContent = point.shortLabel;
+
+  column.append(bar, amount, label);
+  return column;
+}
+
+function buildDebtTimeline(items) {
+  const byMonth = new Map();
+
+  items.forEach((loan) => {
+    if (!loan.dueDate) return;
+
+    const date = parseDate(loan.dueDate);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    const current = byMonth.get(key) ?? { date, deltaKopecks: 0 };
+    const signedAmount = loan.direction === "lent" ? getRemainingKopecks(loan) : -getRemainingKopecks(loan);
+    current.deltaKopecks += signedAmount;
+    byMonth.set(key, current);
+  });
+
+  let positionKopecks = 0;
+  return [...byMonth.values()]
+    .sort((a, b) => a.date - b.date)
+    .map((point) => {
+      positionKopecks += point.deltaKopecks;
+      return {
+        ...point,
+        positionKopecks,
+        label: formatMonth(point.date, "long"),
+        shortLabel: formatMonth(point.date, "short"),
+      };
+    });
 }
 
 function renderJournal() {
@@ -365,6 +448,27 @@ function formatMoney(kopecks) {
   return `${sign}${new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(rubles)} ₽`;
 }
 
+function formatCompactMoney(kopecks) {
+  const sign = kopecks < 0 ? "-" : kopecks > 0 ? "+" : "";
+  const rubles = Math.abs(kopecks) / 100;
+  if (rubles >= 1000000) return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 }).format(rubles / 1000000)} млн ₽`;
+  if (rubles >= 1000) return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(rubles / 1000)} тыс ₽`;
+  return `${sign}${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(rubles)} ₽`;
+}
+
 function formatDate(value) {
-  return new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "short" }).format(new Date(value));
+  return new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "short" }).format(parseDate(value));
+}
+
+function formatMonth(date, monthStyle) {
+  return new Intl.DateTimeFormat("ru-RU", { month: monthStyle }).format(date);
+}
+
+function parseDate(value) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function roundChartNumber(value) {
+  return Math.round(value * 10) / 10;
 }
