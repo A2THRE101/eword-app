@@ -4,17 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0b0a" />
-    <title>Eword Mobile Preview 0.2.7</title>
-    <link rel="manifest" href="./manifest.json?v=0.2.7" />
+    <title>Eword Mobile Preview 0.2.8</title>
+    <link rel="manifest" href="./manifest.json?v=0.2.8" />
     <link rel="stylesheet" href="./eword-theme-0.2.6.css" />
-    <link rel="stylesheet" href="./eword-chart-0.2.7.css" />
+    <link rel="stylesheet" href="./eword-chart-0.2.8.css" />
   </head>
   <body>
     <main class="preview-shell">
       <section class="phone" aria-label="Eword mobile visual preview">
         <header class="app-header">
           <div>
-            <p class="eyebrow">Eword Mobile 0.2.7</p>
+            <p class="eyebrow">Eword Mobile 0.2.8</p>
             <h1 id="screenTitle">Дашборд</h1>
           </div>
           <button class="icon-button" id="syncButton" type="button" title="Синхронизация" aria-label="Синхронизация">↻</button>
@@ -50,9 +50,9 @@
             <div class="timeline-head">
               <div>
                 <span>Динамика долга</span>
-                <h2>По месяцам</h2>
+                <h2>По срокам возврата</h2>
               </div>
-              <strong>+1 510 000,00 ₽</strong>
+              <strong id="timelineTotal">0 ₽</strong>
             </div>
             <div class="chart-panel">
               <div class="chart-scale" aria-hidden="true">
@@ -62,41 +62,10 @@
               </div>
               <div class="chart-area">
                 <svg class="trend-line" viewBox="0 0 300 132" preserveAspectRatio="none" aria-hidden="true">
-                  <polyline class="trend-line-shadow" points="0,112 60,78 120,40 180,92 240,56 300,18"></polyline>
-                  <polyline class="trend-line-path" points="0,112 60,78 120,40 180,92 240,56 300,18"></polyline>
+                  <polyline class="trend-line-shadow" id="trendLineShadow" points=""></polyline>
+                  <polyline class="trend-line-path" id="trendLinePath" points=""></polyline>
                 </svg>
-                <div class="bar-track">
-                  <div class="bar-column negative" title="Март: изменение -280 000,00 ₽, позиция -1 200 000,00 ₽">
-                    <i style="height: 38px"></i>
-                    <strong>-1,2 млн ₽</strong>
-                    <span>Мар</span>
-                  </div>
-                  <div class="bar-column positive" title="Апрель: изменение +420 000,00 ₽, позиция -780 000,00 ₽">
-                    <i style="height: 57px"></i>
-                    <strong>-780 тыс ₽</strong>
-                    <span>Апр</span>
-                  </div>
-                  <div class="bar-column positive" title="Май: изменение +650 000,00 ₽, позиция -130 000,00 ₽">
-                    <i style="height: 88px"></i>
-                    <strong>-130 тыс ₽</strong>
-                    <span>Май</span>
-                  </div>
-                  <div class="bar-column negative" title="Июнь: изменение -360 000,00 ₽, позиция -490 000,00 ₽">
-                    <i style="height: 49px"></i>
-                    <strong>-490 тыс ₽</strong>
-                    <span>Июн</span>
-                  </div>
-                  <div class="bar-column positive" title="Июль: изменение +540 000,00 ₽, позиция +50 000,00 ₽">
-                    <i style="height: 73px"></i>
-                    <strong>50 тыс ₽</strong>
-                    <span>Июл</span>
-                  </div>
-                  <div class="bar-column positive" title="Август: изменение +260 000,00 ₽, позиция +310 000,00 ₽">
-                    <i style="height: 35px"></i>
-                    <strong>310 тыс ₽</strong>
-                    <span>Авг</span>
-                  </div>
-                </div>
+                <div class="bar-track" id="barTrack"></div>
               </div>
             </div>
             <div class="timeline-legend">
@@ -194,6 +163,7 @@
           <section class="update-log" aria-label="Журнал обновлений приложения">
             <h2>Журнал обновлений</h2>
             <ol>
+              <li><strong>0.2.8</strong><span>Диаграмма долгов теперь строится из реальных записей и пересчитывается после создания займа.</span></li>
               <li><strong>0.2.7</strong><span>Добавлена гистограмма с таймлайном и линией изменения долга в дашборде.</span></li>
               <li><strong>0.2.6</strong><span>Черно-оранжевая тема Варианта A и журнал обновлений в настройках.</span></li>
               <li><strong>0.2.5</strong><span>Суммы внутри приложения считаются в копейках, а на экране показываются в рублях.</span></li>
@@ -247,11 +217,6 @@
       </article>
     </template>
 
-    <script src="./app.js?v=0.2.6" defer></script>
-    <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        document.title = "Eword Mobile Preview 0.2.7";
-      });
-    </script>
+    <script src="./app.js?v=0.2.8" defer></script>
   </body>
 </html>
