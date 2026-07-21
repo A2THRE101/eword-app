@@ -1,0 +1,88 @@
+.app-locked,
+.auth-locked {
+  display: none;
+}
+
+.auth-shell {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  background: var(--page);
+  padding: 20px;
+}
+
+.auth-card {
+  display: grid;
+  width: min(100%, 430px);
+  gap: 12px;
+  border: 1px solid rgba(255, 122, 26, 0.16);
+  border-radius: 28px;
+  background: var(--phone);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.auth-card h1 {
+  margin-top: 4px;
+}
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.auth-field span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.auth-field input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  outline: none;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.auth-field input::placeholder {
+  color: rgba(170, 163, 154, 0.58);
+}
+
+.auth-field:focus-within {
+  border-color: var(--accent);
+  background: #1f1e1b;
+}
+
+.auth-field.hidden {
+  display: none;
+}
+
+.auth-switch {
+  justify-self: center;
+  padding: 6px 0;
+}
+
+.auth-status {
+  min-height: 18px;
+  color: var(--warning);
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.auth-status.success {
+  color: var(--accent);
+}
+
+#logoutButton strong {
+  color: var(--danger);
+}
