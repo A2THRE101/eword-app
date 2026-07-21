@@ -1,5 +1,9 @@
 const AUTH_USERS_KEY = "eword_auth_users_v1";
 const AUTH_SESSION_KEY = "eword_auth_session_v1";
+const APP_VERSION = "0.3.1";
+
+const authMemoryStore = new Map();
+const authStorage = createAuthStorage();
 
 const authNodes = {
   authScreen: document.querySelector("#authScreen"),
@@ -26,8 +30,7 @@ restoreSession();
 
 authNodes.authModeToggle.addEventListener("click", () => {
   authMode = authMode === "login" ? "register" : "login";
-  authNodes.authStatus.textContent = "";
-  authNodes.authStatus.classList.remove("success");
+  setAuthStatus("");
   renderAuthMode();
 });
 
@@ -41,11 +44,9 @@ authNodes.authForm.addEventListener("submit", (event) => {
 });
 
 authNodes.logoutButton.addEventListener("click", () => {
-  localStorage.removeItem(AUTH_SESSION_KEY);
+  clearSession();
   authNodes.authPassword.value = "";
-  authNodes.authStatus.textContent = "Вы вышли из аккаунта.";
-  authNodes.authStatus.classList.remove("success");
-  showAuth();
+  showAuth("Вы вышли из аккаунта.");
 });
 
 function restoreSession() {
@@ -103,11 +104,12 @@ function registerUser() {
 }
 
 function showApp(user) {
-  document.title = "Eword Mobile Preview 0.3.0";
+  document.title = `Eword Mobile Preview ${APP_VERSION}`;
   authNodes.authScreen.classList.add("auth-locked");
   authNodes.appShell.classList.remove("app-locked");
-  authNodes.authStatus.textContent = "";
-  authNodes.authStatus.classList.remove("success");
+  authNodes.authScreen.style.removeProperty("display");
+  authNodes.appShell.style.removeProperty("display");
+  setAuthStatus("");
   authNodes.profileDisplayName.textContent = user.name;
   authNodes.profileAuthInfo.textContent = `Вход выполнен: ${user.login}`;
 }
@@ -115,8 +117,14 @@ function showApp(user) {
 function showAuth(message = "") {
   authNodes.appShell.classList.add("app-locked");
   authNodes.authScreen.classList.remove("auth-locked");
+  authNodes.appShell.style.removeProperty("display");
+  authNodes.authScreen.style.removeProperty("display");
+  setAuthStatus(message, message.includes("создан"));
+}
+
+function setAuthStatus(message, isSuccess = false) {
   authNodes.authStatus.textContent = message;
-  authNodes.authStatus.classList.toggle("success", message.includes("создан"));
+  authNodes.authStatus.classList.toggle("success", isSuccess);
 }
 
 function renderAuthMode() {
@@ -129,27 +137,36 @@ function renderAuthMode() {
 }
 
 function readUsers() {
-  try {
-    return JSON.parse(localStorage.getItem(AUTH_USERS_KEY)) || [];
-  } catch {
-    return [];
-  }
+  return readJson(AUTH_USERS_KEY, []);
 }
 
 function writeUsers(users) {
-  localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
+  writeJson(AUTH_USERS_KEY, users);
 }
 
 function readSession() {
-  try {
-    return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY));
-  } catch {
-    return null;
-  }
+  return readJson(AUTH_SESSION_KEY, null);
 }
 
 function saveSession(login) {
-  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ login, createdAt: new Date().toISOString() }));
+  writeJson(AUTH_SESSION_KEY, { login, createdAt: new Date().toISOString() });
+}
+
+function clearSession() {
+  authStorage.removeItem(AUTH_SESSION_KEY);
+}
+
+function readJson(key, fallback) {
+  try {
+    const raw = authStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key, value) {
+  authStorage.setItem(key, JSON.stringify(value));
 }
 
 function findUser(login) {
@@ -177,4 +194,23 @@ function normalizeLogin(value) {
 
 function hashDemoPassword(value) {
   return btoa(unescape(encodeURIComponent(`eword-demo:${value}`)));
+}
+
+function createAuthStorage() {
+  try {
+    const probeKey = "eword_auth_storage_probe";
+    window.localStorage.setItem(probeKey, "1");
+    window.localStorage.removeItem(probeKey);
+    return window.localStorage;
+  } catch {
+    setTimeout(() => {
+      setAuthStatus("Браузер не разрешил постоянное хранение. Вход работает только до закрытия вкладки.");
+    }, 0);
+
+    return {
+      getItem: (key) => authMemoryStore.get(key) ?? null,
+      setItem: (key, value) => authMemoryStore.set(key, value),
+      removeItem: (key) => authMemoryStore.delete(key),
+    };
+  }
 }
