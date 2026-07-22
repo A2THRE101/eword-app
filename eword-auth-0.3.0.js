@@ -1,6 +1,6 @@
 const AUTH_USERS_KEY = "eword_auth_users_v1";
 const AUTH_SESSION_KEY = "eword_auth_session_v1";
-const APP_VERSION = "0.3.1";
+const APP_VERSION = "0.3.2";
 
 const authMemoryStore = new Map();
 const authStorage = createAuthStorage();
@@ -174,18 +174,15 @@ function findUser(login) {
 }
 
 function seedDemoUser() {
-  const users = readUsers();
-  if (users.some((user) => user.login === "murad")) return;
+  const demoUser = {
+    login: "murad",
+    name: "Мурад",
+    passwordHash: hashDemoPassword("1234"),
+    createdAt: new Date().toISOString(),
+  };
+  const users = readUsers().filter((user) => user.login !== demoUser.login);
 
-  writeUsers([
-    ...users,
-    {
-      login: "murad",
-      name: "Мурад",
-      passwordHash: hashDemoPassword("1234"),
-      createdAt: new Date().toISOString(),
-    },
-  ]);
+  writeUsers([demoUser, ...users]);
 }
 
 function normalizeLogin(value) {
