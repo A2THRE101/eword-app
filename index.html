@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0b0a" />
-    <title>Eword Mobile Preview 0.3.2</title>
-    <link rel="manifest" href="./manifest.json?v=0.3.2" />
+    <title>Eword Mobile Preview 0.4.0</title>
+    <link rel="manifest" href="./manifest.json?v=0.4.0" />
     <link rel="stylesheet" href="./eword-theme-0.2.6.css" />
     <link rel="stylesheet" href="./eword-chart-0.2.8.css" />
     <link rel="stylesheet" href="./eword-ledger-0.2.9.css" />
@@ -15,7 +15,7 @@
     <section class="auth-shell" id="authScreen" aria-label="Вход в Eword">
       <form class="auth-card" id="authForm">
         <div>
-          <p class="eyebrow">Eword Mobile 0.3.2</p>
+          <p class="eyebrow">Eword Mobile 0.4.0</p>
           <h1 id="authTitle">Вход</h1>
         </div>
         <label class="auth-field" id="authNameField">
@@ -40,7 +40,7 @@
       <section class="phone" aria-label="Eword mobile visual preview">
         <header class="app-header">
           <div>
-            <p class="eyebrow">Eword Mobile 0.3.2</p>
+            <p class="eyebrow">Eword Mobile 0.4.0</p>
             <h1 id="screenTitle">Дашборд</h1>
           </div>
           <button class="icon-button" id="syncButton" type="button" title="Синхронизация" aria-label="Синхронизация">↻</button>
@@ -204,6 +204,7 @@
           <section class="update-log" aria-label="Журнал обновлений приложения">
             <h2>Журнал обновлений</h2>
             <ol>
+              <li><strong>0.4.0</strong><span>Авторизация подключена к backend API: аккаунты хранятся в базе, пароли сохраняются только как Argon2id-хэши.</span></li>
               <li><strong>0.3.2</strong><span>Вход теперь принудительно открывает дашборд после успешной проверки логина и пароля.</span></li>
               <li><strong>0.3.1</strong><span>Исправлена локальная авторизация: вход и выход устойчиво переключают экраны и очищают временные стили.</span></li>
               <li><strong>0.3.0</strong><span>Добавлен прототип входа по логину и паролю с локальной сессией и выходом из профиля.</span></li>
@@ -262,7 +263,8 @@
       </article>
     </template>
 
-    <script src="./app.js?v=0.3.2" defer></script>
-    <script src="./eword-auth-0.3.2.js?v=0.3.2" defer></script>
+    <script src="./eword-config.js?v=0.4.0"></script>
+    <script src="./app.js?v=0.4.0" defer></script>
+    <script src="./eword-auth-0.4.0.js?v=0.4.0" defer></script>
   </body>
 </html>
