@@ -139,7 +139,7 @@
     setAuthStatus(nodes, "");
     nodes.profileDisplayName.textContent = user.name;
     nodes.profileAuthInfo.textContent = `Вход выполнен: ${user.login}`;
-    window.scrollTo({ top: 0, behavior: "instant" });
+    window.scrollTo(0, 0);
   }
 
   function showAuth(nodes, message = "") {
