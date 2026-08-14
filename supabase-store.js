@@ -1,13 +1,15 @@
 (() => {
   const CONFIG_KEY = "eword.supabase.config";
+  const DEFAULT_SUPABASE_URL = "https://zmgxfjocqwratpwwrrqx.supabase.co";
   let client = null;
 
   function getConfig() {
     try {
       const value = window.localStorage.getItem(CONFIG_KEY);
-      return value ? JSON.parse(value) : null;
+      const config = value ? JSON.parse(value) : null;
+      return normalizeConfig(config);
     } catch {
-      return null;
+      return normalizeConfig(null);
     }
   }
 
@@ -25,7 +27,7 @@
 
   function normalizeConfig(config) {
     return {
-      url: String(config?.url || "").trim().replace(/\/+$/, ""),
+      url: String(config?.url || DEFAULT_SUPABASE_URL).trim().replace(/\/+$/, ""),
       key: String(config?.key || "").trim(),
     };
   }
