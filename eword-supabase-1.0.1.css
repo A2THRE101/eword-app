@@ -1,0 +1,81 @@
+.supabase-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  padding: 16px;
+}
+
+.supabase-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+.supabase-head span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.supabase-head h2 {
+  margin-top: 4px;
+}
+
+.supabase-head strong {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgba(255, 122, 26, 0.14);
+  color: var(--accent);
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.supabase-panel .form-field {
+  min-height: 52px;
+}
+
+.supabase-panel .form-field input {
+  width: min(100%, 210px);
+}
+
+.supabase-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.secondary-action {
+  height: 44px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--accent);
+  color: #12100d;
+  font-weight: 900;
+}
+
+.muted-action {
+  border-color: var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.form-status.error {
+  color: var(--danger);
+}
+
+@media (max-width: 360px) {
+  .supabase-actions {
+    grid-template-columns: 1fr;
+  }
+}
