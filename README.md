@@ -44,14 +44,23 @@ The frontend stores only the Supabase Project URL and public/publishable key in 
 
 ## Supabase Setup
 
-1. Create or open a Supabase project.
+Current project URL: `https://zmgxfjocqwratpwwrrqx.supabase.co`
+
+1. Create or open the Supabase project.
 2. Open SQL Editor and run the full contents of `schema.sql`.
 3. In Authentication settings, enable Anonymous Sign-Ins.
 4. In the app, open `Профиль` -> `Supabase`.
-5. Paste the Project URL and public/publishable key.
+5. Paste the public/publishable key. The project URL is already prefilled in the app.
 6. Click `Подключить` and then use the sync button in the app header.
 
 `schema.sql` enables Row Level Security and grants access to the `authenticated` role. Anonymous Supabase users still use the `authenticated` database role after `signInAnonymously()`, so records remain private to the generated user id.
+
+## Project Rules
+
+- Security rules: `SECURITY.md`
+- Forward roadmap: `ROADMAP.md`
+
+GitHub Pages and RawGitHack are preview surfaces only. The production mobile apps should use Supabase Auth, PostgreSQL/RLS, and backend functions for sensitive operations.
 
 ## Active Files
 
