@@ -24,7 +24,7 @@
           <div class="balance-band">
             <span>Чистая позиция</span>
             <strong id="netPosition">0 ₽</strong>
-            <p id="syncState">Синхронизировано только что</p>
+            <p id="syncState">Демо-режим</p>
           </div>
 
           <div class="metric-grid" aria-label="Текущие обязательства">
@@ -157,9 +157,33 @@
           <div class="settings-list">
             <button type="button"><span>Валюта по умолчанию</span><strong>RUB</strong></button>
             <button type="button"><span>Push-напоминания</span><strong>Вкл</strong></button>
-            <button type="button"><span>Вход</span><strong>Телефон / email</strong></button>
+            <button type="button"><span>Вход</span><strong>Анонимный</strong></button>
             <button type="button"><span>Экспорт данных</span><strong>JSON</strong></button>
           </div>
+
+          <section class="supabase-panel" aria-label="Supabase">
+            <div class="supabase-head">
+              <div>
+                <span>Хранилище</span>
+                <h2>Supabase</h2>
+              </div>
+              <strong id="dataModeValue">Демо</strong>
+            </div>
+            <label class="form-field">
+              <span>Project URL</span>
+              <input id="supabaseUrl" type="url" placeholder="https://...supabase.co" autocomplete="off" />
+            </label>
+            <label class="form-field">
+              <span>Public key</span>
+              <input id="supabaseKey" type="password" placeholder="sb_publishable_..." autocomplete="off" />
+            </label>
+            <div class="supabase-actions">
+              <button class="secondary-action" id="supabaseConnectButton" type="button">Подключить</button>
+              <button class="secondary-action muted-action" id="supabaseDisconnectButton" type="button">Отключить</button>
+            </div>
+            <p class="form-status" id="supabaseStatus" aria-live="polite"></p>
+          </section>
+
           <section class="update-log" aria-label="Версия приложения">
             <h2>Версия приложения</h2>
             <ol>
@@ -209,6 +233,8 @@
       </article>
     </template>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.9/dist/umd/supabase.min.js" defer></script>
+    <script src="./supabase-store.js?v=1.0.1" defer></script>
     <script src="./app.js?v=1.0.1" defer></script>
   </body>
 </html>
