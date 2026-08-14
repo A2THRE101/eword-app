@@ -1,14 +1,15 @@
 # Eword Roadmap
 
-## Phase 1: Stable Web Prototype
+## Phase 1: Stable Product Baseline
 
-Goal: keep the approved black-orange interface as the product baseline and make the data layer real enough to test.
+Goal: keep the approved black-orange interface as the product baseline and make the data layer compatible with the future mobile app.
 
 - Keep version `1.0.1` as the canonical UI baseline.
 - Store the approved app state in clean, current-version files only.
-- Connect Supabase through the profile screen.
+- Treat RawGitHack/GitHub Pages as preview surfaces, not production architecture.
+- Configure Supabase as build-owned client config, not as user-entered settings.
 - Run `schema.sql` in the Supabase project.
-- Enable Anonymous Sign-Ins for early testing.
+- Enable Anonymous Sign-Ins for early testing only.
 - Verify create, read, and confirmation update flows against Supabase.
 
 ## Phase 2: Real Product Data Model
@@ -58,7 +59,7 @@ Goal: release safely.
 ## Immediate Next Steps
 
 1. Run the Supabase schema in SQL Editor.
-2. Enable Anonymous Sign-Ins.
-3. Copy the public/publishable key into the app profile screen.
+2. Enable Anonymous Sign-Ins for early testing.
+3. Add the public/publishable key to build config after RLS is active.
 4. Create one test record in the app.
 5. Confirm the row appears in `public.debt_records`.
