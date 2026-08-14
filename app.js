@@ -126,6 +126,7 @@ const nodes = {
   supabaseDisconnectButton: document.querySelector("#supabaseDisconnectButton"),
   supabaseStatus: document.querySelector("#supabaseStatus"),
   dataModeValue: document.querySelector("#dataModeValue"),
+  supabaseProjectValue: document.querySelector("#supabaseProjectValue"),
 };
 
 document.title = `Eword Mobile ${VERSION}`;
@@ -342,8 +343,19 @@ function renderConfirmations() {
 function renderSupabasePanel() {
   if (!nodes.dataModeValue || !nodes.supabaseStatus) return;
 
-  nodes.dataModeValue.textContent = state.storageMode === "supabase" ? "Supabase" : "Демо";
+  const labels = {
+    demo: "Офлайн",
+    error: "Ошибка",
+    pending: "Подключение",
+    supabase: "Онлайн",
+  };
+  const config = store?.getConfig?.();
+
+  nodes.dataModeValue.textContent = labels[state.storageMode] || "Офлайн";
   nodes.supabaseStatus.classList.toggle("error", state.storageMode === "error");
+  if (nodes.supabaseProjectValue) {
+    nodes.supabaseProjectValue.textContent = getProjectLabel(config?.url);
+  }
 }
 
 function renderLoanRow(loan, mode) {
@@ -464,6 +476,11 @@ async function connectSupabase() {
     return;
   }
 
+  if (!nodes.supabaseUrl || !nodes.supabaseKey) {
+    setSupabaseStatus("Конфигурация Supabase задается в сборке приложения.", "demo");
+    return;
+  }
+
   const url = nodes.supabaseUrl.value.trim();
   const key = nodes.supabaseKey.value.trim();
   if (!url || !key) {
@@ -478,7 +495,7 @@ async function connectSupabase() {
 async function disconnectSupabase() {
   if (store) {
     await store.signOut();
-    store.clearConfig();
+    store.clearConfig?.();
   }
 
   loans = seedLoans.map(cloneRecord);
@@ -494,8 +511,8 @@ async function syncData({ manual = false } = {}) {
 
   if (!isSupabaseConfigured()) {
     state.storageMode = "demo";
-    nodes.syncState.textContent = manual ? "Демо-режим обновлен" : "Демо-режим";
-    setSupabaseStatus("Демо-данные в памяти браузера.", "demo");
+    nodes.syncState.textContent = manual ? "Backend не настроен" : "Демо-режим";
+    setSupabaseStatus("Public key не добавлен в сборку. Используются демо-данные.", "demo");
     setSyncBusy(false);
     render();
     return;
@@ -531,8 +548,9 @@ function initializeSupabasePanel() {
   }
 
   const config = store.getConfig();
-  if (config?.url) nodes.supabaseUrl.value = config.url;
-  if (config?.key) nodes.supabaseKey.value = config.key;
+  if (nodes.supabaseUrl && config?.url) nodes.supabaseUrl.value = config.url;
+  if (nodes.supabaseKey && config?.key) nodes.supabaseKey.value = config.key;
+  if (nodes.supabaseProjectValue) nodes.supabaseProjectValue.textContent = getProjectLabel(config?.url);
 }
 
 function isSupabaseConfigured() {
@@ -544,7 +562,8 @@ function isSupabaseReady() {
 }
 
 function setSupabaseStatus(message, mode) {
-  state.storageMode = mode === "supabase" ? "supabase" : mode === "error" ? "error" : state.storageMode;
+  const knownModes = new Set(["demo", "error", "pending", "supabase"]);
+  if (knownModes.has(mode)) state.storageMode = mode;
   if (!nodes.supabaseStatus) return;
   nodes.supabaseStatus.textContent = message;
   nodes.supabaseStatus.classList.toggle("error", mode === "error");
@@ -554,6 +573,16 @@ function setSyncBusy(isBusy) {
   nodes.syncButton.classList.toggle("spinning", isBusy);
   nodes.syncButton.disabled = isBusy;
   if (nodes.supabaseConnectButton) nodes.supabaseConnectButton.disabled = isBusy;
+}
+
+function getProjectLabel(value) {
+  if (!value) return "Не задан";
+
+  try {
+    return new URL(value).hostname.replace(".supabase.co", "");
+  } catch {
+    return "Не задан";
+  }
 }
 
 function cloneRecord(record) {
