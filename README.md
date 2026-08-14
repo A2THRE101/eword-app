@@ -1,37 +1,46 @@
 # Eword App
 
-Version: `0.2.7`
+Version: `1.0.1`
 
-Eword Mobile Visual Preview is an interactive browser prototype for the future iOS and Android app. It is still a static preview, but its screens and flows are shaped around the mobile product: dashboard, obligations, journal, sorting, and second-party confirmations.
+Eword is a mobile interface preview for personal loan accounting. Version `1.0.1` is the canonical working version of the app and is based on the approved black-orange mobile interface.
 
-## Included in this preview
+## Current Interface
 
 - Mobile dashboard with current obligations.
-- Dashboard histogram with monthly debt timeline and net-position trend.
+- Debt timeline chart with monthly changes and net-position trend.
 - Totals for receivables, payables, overdue debt, and pending confirmations.
-- Journal separated by loan type.
+- Journal grouped by loan type and filter state.
 - Sorting by due date, amount, creation date, and status.
 - Manual debt record creation through the centered `+` button.
-- SQL accounting schema that stores money as integer Russian kopecks.
 - Confirmation queue for loans and payments.
-- Profile/settings preview with an in-app update log.
-- Static GitHub Pages deployment via `gh-pages`.
+- Profile/settings screen with the current app version.
 
-## Version notes
+## Data And Entities
 
-`0.2.2` removes the "Upcoming actions" dashboard section to keep the preview focused on obligations and the journal.
+The current preview models these core entities:
 
-`0.2.3` adds the centered `+` action in bottom navigation and a manual debt record form.
+- `loans`: personal debt records with person, direction, amount, paid amount, due date, status, note, creation date, and second-party confirmation state.
+- `confirmations`: pending actions that require the other side to approve or decline.
 
-`0.2.4` updates the manual record form with required obligation type, name, issue date, due date, comment, and formatted amount fields.
+Money is stored internally as integer Russian kopecks and formatted as rubles only for display.
 
-`0.2.5` stores debt amounts internally as integer kopecks and keeps ruble formatting only for frontend display.
+Examples:
 
-`0.2.6` applies the approved orange-black visual direction and adds an in-app update log under profile settings.
+- `1 000,00 ₽` -> `100000`
+- `1 000 000,00 ₽` -> `100000000`
 
-`0.2.7` adds a dashboard histogram with a monthly timeline and net-position trend line.
+Use `schema.sql` as the first draft of the accounting table.
 
-## Product direction
+## Active Files
+
+- `index.html`: app markup and screen structure.
+- `app.js`: app state, rendering, sorting, form handling, timeline calculations, and formatting.
+- `eword-theme-1.0.1.css`: black-orange mobile theme.
+- `eword-chart-1.0.1.css`: dashboard timeline chart styles.
+- `manifest.json`: PWA metadata.
+- `schema.sql`: first backend storage draft.
+
+## Product Direction
 
 Target mobile product:
 
@@ -39,23 +48,3 @@ Target mobile product:
 - Supabase backend for authentication, sync, PostgreSQL storage, and realtime updates.
 - Second-party confirmation for loans and payments.
 - Push reminders and activity history.
-
-## Data flow preview
-
-1. User opens Eword on mobile.
-2. Dashboard reads active loans and pending confirmations.
-3. Journal groups records by debt type and applies the selected sort.
-4. Dashboard visualizes monthly debt changes as bars and net position as a trend line.
-5. Confirmation requests model actions requiring the second party.
-6. Future mobile app will replace static seed data with synced backend data.
-
-## Accounting storage rule
-
-Frontend users enter and see rubles, for example `1 000,00 ₽`.
-
-Application and SQL storage keep the same value as integer kopecks:
-
-- `1 000,00 ₽` -> `100000`
-- `1 000 000,00 ₽` -> `100000000`
-
-Use `schema.sql` as the first draft of the accounting table.
