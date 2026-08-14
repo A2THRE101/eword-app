@@ -11,7 +11,7 @@ These values may appear in GitHub, the static preview, and future mobile client 
 - table names, column names, and client-side validation rules
 - public app version and UI assets
 
-The public/publishable key identifies the Supabase project, but it is not a database password. It is safe only when Row Level Security is enabled and policies are correct.
+The public/publishable key identifies the Supabase project, but it is not a database password. It is safe only when Row Level Security is enabled and policies are correct. End users should not type backend configuration in the app; the client build owns public configuration.
 
 ## Never Commit Or Ship
 
@@ -39,7 +39,7 @@ If one of these values is exposed, rotate it immediately in the provider dashboa
 
 - Project ref: `zmgxfjocqwratpwwrrqx`
 - Project URL: `https://zmgxfjocqwratpwwrrqx.supabase.co`
-- Public key: configured by the user in the app profile screen
+- Public key: added to client build configuration after RLS is enabled
 - Service role key: never used in the frontend
 
 ## Release Strategy
@@ -49,7 +49,7 @@ GitHub Pages and RawGitHack are preview surfaces only. They are useful while des
 For App Store and Google Play releases:
 
 - build with React Native + Expo or a native shell;
-- keep public Supabase config in the client;
+- keep public Supabase config in the client build;
 - keep secrets in Supabase Edge Functions, backend infrastructure, or Expo/EAS secret storage;
 - validate all important authorization in Postgres RLS or backend code;
 - test data isolation before beta release.
