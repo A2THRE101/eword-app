@@ -1,6 +1,7 @@
 const VERSION = "1.0.1";
+const store = window.EwordSupabaseStore;
 
-const loans = [
+const seedLoans = [
   {
     id: "loan-1",
     person: "Азамат",
@@ -63,7 +64,7 @@ const loans = [
   },
 ];
 
-const confirmations = [
+const seedConfirmations = [
   {
     id: "confirm-1",
     type: "Новый займ",
@@ -78,10 +79,14 @@ const confirmations = [
   },
 ];
 
+let loans = seedLoans.map(cloneRecord);
+let confirmations = seedConfirmations.map(cloneRecord);
+
 const state = {
   screen: "dashboard",
   filter: "all",
   sort: "due",
+  storageMode: "demo",
 };
 
 const nodes = {
@@ -115,9 +120,15 @@ const nodes = {
   trendLinePath: document.querySelector("#trendLinePath"),
   trendLineShadow: document.querySelector("#trendLineShadow"),
   barTrack: document.querySelector("#barTrack"),
+  supabaseUrl: document.querySelector("#supabaseUrl"),
+  supabaseKey: document.querySelector("#supabaseKey"),
+  supabaseConnectButton: document.querySelector("#supabaseConnectButton"),
+  supabaseDisconnectButton: document.querySelector("#supabaseDisconnectButton"),
+  supabaseStatus: document.querySelector("#supabaseStatus"),
+  dataModeValue: document.querySelector("#dataModeValue"),
 };
 
-document.title = `Eword Mobile Preview ${VERSION}`;
+document.title = `Eword Mobile ${VERSION}`;
 
 nodes.navButtons.forEach((button) => {
   button.addEventListener("click", () => setScreen(button.dataset.screenTarget));
@@ -151,12 +162,7 @@ nodes.entryAmount.addEventListener("input", () => {
 });
 
 nodes.syncButton.addEventListener("click", () => {
-  nodes.syncButton.classList.add("spinning");
-  nodes.syncState.textContent = "Синхронизация...";
-  window.setTimeout(() => {
-    nodes.syncButton.classList.remove("spinning");
-    nodes.syncState.textContent = "Синхронизировано только что";
-  }, 650);
+  void syncData({ manual: true });
 });
 
 nodes.confirmationList.addEventListener("click", (event) => {
@@ -164,54 +170,25 @@ nodes.confirmationList.addEventListener("click", (event) => {
   const row = event.target.closest(".confirm-row");
   if (!button || !row) return;
 
-  row.classList.add(button.dataset.action === "approve" ? "approved" : "declined");
-  window.setTimeout(() => row.remove(), 220);
+  void resolveConfirmation(row, button.dataset.action);
 });
 
 nodes.entryForm.addEventListener("submit", (event) => {
   event.preventDefault();
-
-  const person = nodes.entryPerson.value.trim();
-  const amountKopecks = parseAmountToKopecks(nodes.entryAmount.value);
-  const issueDate = nodes.entryIssueDate.value;
-  const dueDate = nodes.entryDueDate.value;
-  const note = nodes.entryNote.value.trim();
-
-  if (!person || !issueDate || !dueDate || !note || !Number.isInteger(amountKopecks) || amountKopecks <= 0) {
-    nodes.entryStatus.textContent = "Заполните все обязательные поля.";
-    return;
-  }
-
-  const loan = {
-    id: `loan-${Date.now()}`,
-    person,
-    direction: nodes.entryDirection.value,
-    amountKopecks,
-    paidKopecks: 0,
-    dueDate,
-    status: "pending",
-    note,
-    createdAt: issueDate,
-    confirmedByOther: false,
-  };
-
-  loans.unshift(loan);
-  confirmations.unshift({
-    id: `confirm-${Date.now()}`,
-    type: "Новый займ",
-    title: `${person} подтверждает ${formatMoney(amountKopecks)}`,
-    description: "Запись создана вручную и ожидает подтверждения второй стороны.",
-  });
-
-  nodes.entryForm.reset();
-  nodes.entryStatus.textContent = "Запись создана и добавлена в журнал.";
-  state.filter = "all";
-  state.sort = "created";
-  nodes.sortSelect.value = "created";
-  setScreen("journal");
+  void createEntry();
 });
 
+nodes.supabaseConnectButton?.addEventListener("click", () => {
+  void connectSupabase();
+});
+
+nodes.supabaseDisconnectButton?.addEventListener("click", () => {
+  void disconnectSupabase();
+});
+
+initializeSupabasePanel();
 render();
+void syncData();
 
 function setScreen(screen) {
   state.screen = screen;
@@ -224,6 +201,7 @@ function render() {
   renderDebtTimeline();
   renderJournal();
   renderConfirmations();
+  renderSupabasePanel();
 }
 
 function renderScreen() {
@@ -361,6 +339,13 @@ function renderConfirmations() {
   nodes.confirmationList.replaceChildren(...confirmations.map(renderConfirmation));
 }
 
+function renderSupabasePanel() {
+  if (!nodes.dataModeValue || !nodes.supabaseStatus) return;
+
+  nodes.dataModeValue.textContent = state.storageMode === "supabase" ? "Supabase" : "Демо";
+  nodes.supabaseStatus.classList.toggle("error", state.storageMode === "error");
+}
+
 function renderLoanRow(loan, mode) {
   const fragment = nodes.loanTemplate.content.cloneNode(true);
   const row = fragment.querySelector(".loan-row");
@@ -391,6 +376,188 @@ function renderConfirmation(item) {
   fragment.querySelector("h3").textContent = item.title;
   fragment.querySelector("p").textContent = item.description;
   return fragment;
+}
+
+async function createEntry() {
+  const person = nodes.entryPerson.value.trim();
+  const amountKopecks = parseAmountToKopecks(nodes.entryAmount.value);
+  const issueDate = nodes.entryIssueDate.value;
+  const dueDate = nodes.entryDueDate.value;
+  const note = nodes.entryNote.value.trim();
+
+  if (!person || !issueDate || !dueDate || !note || !Number.isInteger(amountKopecks) || amountKopecks <= 0) {
+    nodes.entryStatus.textContent = "Заполните все обязательные поля.";
+    return;
+  }
+
+  const draftLoan = {
+    id: `loan-${Date.now()}`,
+    person,
+    direction: nodes.entryDirection.value,
+    amountKopecks,
+    paidKopecks: 0,
+    dueDate,
+    status: "pending",
+    note,
+    createdAt: issueDate,
+    confirmedByOther: false,
+  };
+
+  const draftConfirmation = {
+    id: `confirm-${Date.now()}`,
+    type: "Новый займ",
+    title: `${person} подтверждает ${formatMoney(amountKopecks)}`,
+    description: "Запись создана вручную и ожидает подтверждения второй стороны.",
+  };
+
+  try {
+    nodes.entryStatus.textContent = isSupabaseReady() ? "Сохраняю в Supabase..." : "Сохраняю в демо-режиме...";
+
+    if (isSupabaseReady()) {
+      const savedLoan = await store.createDebtRecord(draftLoan);
+      const savedConfirmation = await store.createConfirmation({
+        ...draftConfirmation,
+        relatedDebtRecordId: savedLoan.id,
+      });
+      loans.unshift(savedLoan);
+      confirmations.unshift(savedConfirmation);
+      nodes.syncState.textContent = "Синхронизировано с Supabase";
+    } else {
+      loans.unshift(draftLoan);
+      confirmations.unshift(draftConfirmation);
+      nodes.syncState.textContent = "Демо-режим";
+    }
+
+    nodes.entryForm.reset();
+    nodes.entryStatus.textContent = "Запись создана и добавлена в журнал.";
+    state.filter = "all";
+    state.sort = "created";
+    nodes.sortSelect.value = "created";
+    setScreen("journal");
+  } catch (error) {
+    nodes.entryStatus.textContent = `Supabase: ${error.message}`;
+  }
+}
+
+async function resolveConfirmation(row, action) {
+  const id = row.dataset.id;
+  row.classList.add(action === "approve" ? "approved" : "declined");
+
+  try {
+    if (isSupabaseReady()) {
+      await store.updateConfirmationStatus(id, action === "approve" ? "approved" : "declined");
+    }
+    confirmations = confirmations.filter((item) => item.id !== id);
+    window.setTimeout(() => {
+      render();
+    }, 220);
+  } catch (error) {
+    row.classList.remove("approved", "declined");
+    nodes.supabaseStatus.textContent = `Supabase: ${error.message}`;
+    nodes.supabaseStatus.classList.add("error");
+  }
+}
+
+async function connectSupabase() {
+  if (!store) {
+    setSupabaseStatus("Supabase SDK недоступен.", "error");
+    return;
+  }
+
+  const url = nodes.supabaseUrl.value.trim();
+  const key = nodes.supabaseKey.value.trim();
+  if (!url || !key) {
+    setSupabaseStatus("Укажите Project URL и Public key.", "error");
+    return;
+  }
+
+  store.saveConfig({ url, key });
+  await syncData({ manual: true });
+}
+
+async function disconnectSupabase() {
+  if (store) {
+    await store.signOut();
+    store.clearConfig();
+  }
+
+  loans = seedLoans.map(cloneRecord);
+  confirmations = seedConfirmations.map(cloneRecord);
+  state.storageMode = "demo";
+  nodes.syncState.textContent = "Демо-режим";
+  setSupabaseStatus("Отключено. Используются демо-данные.", "demo");
+  render();
+}
+
+async function syncData({ manual = false } = {}) {
+  setSyncBusy(true);
+
+  if (!isSupabaseConfigured()) {
+    state.storageMode = "demo";
+    nodes.syncState.textContent = manual ? "Демо-режим обновлен" : "Демо-режим";
+    setSupabaseStatus("Демо-данные в памяти браузера.", "demo");
+    setSyncBusy(false);
+    render();
+    return;
+  }
+
+  try {
+    setSupabaseStatus("Подключение...", "pending");
+    await store.ensureSession();
+    const [remoteLoans, remoteConfirmations] = await Promise.all([
+      store.loadDebtRecords(),
+      store.loadConfirmations(),
+    ]);
+
+    loans = remoteLoans;
+    confirmations = remoteConfirmations;
+    state.storageMode = "supabase";
+    nodes.syncState.textContent = "Синхронизировано с Supabase";
+    setSupabaseStatus("Supabase подключен.", "supabase");
+  } catch (error) {
+    state.storageMode = "error";
+    nodes.syncState.textContent = "Демо-режим";
+    setSupabaseStatus(`Supabase: ${error.message}`, "error");
+  } finally {
+    setSyncBusy(false);
+    render();
+  }
+}
+
+function initializeSupabasePanel() {
+  if (!store) {
+    setSupabaseStatus("Supabase SDK недоступен.", "error");
+    return;
+  }
+
+  const config = store.getConfig();
+  if (config?.url) nodes.supabaseUrl.value = config.url;
+  if (config?.key) nodes.supabaseKey.value = config.key;
+}
+
+function isSupabaseConfigured() {
+  return Boolean(store?.isConfigured());
+}
+
+function isSupabaseReady() {
+  return state.storageMode === "supabase" && isSupabaseConfigured();
+}
+
+function setSupabaseStatus(message, mode) {
+  state.storageMode = mode === "supabase" ? "supabase" : mode === "error" ? "error" : state.storageMode;
+  if (!nodes.supabaseStatus) return;
+  nodes.supabaseStatus.textContent = message;
+  nodes.supabaseStatus.classList.toggle("error", mode === "error");
+}
+
+function setSyncBusy(isBusy) {
+  nodes.syncButton.classList.toggle("spinning", isBusy);
+  nodes.syncButton.disabled = isBusy;
+  if (nodes.supabaseConnectButton) nodes.supabaseConnectButton.disabled = isBusy;
+}
+
+function cloneRecord(record) {
+  return { ...record };
 }
 
 function buildMeta(loan, mode) {
