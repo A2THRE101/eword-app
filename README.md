@@ -2,7 +2,7 @@
 
 Version: `1.0.1`
 
-Eword is a mobile interface preview for personal loan accounting. Version `1.0.1` is the canonical working version of the app and is based on the approved black-orange mobile interface.
+Eword is a mobile-first personal loan accounting product. Version `1.0.1` is the canonical black-orange UI baseline. The current static web build is only a preview surface for product design and data-flow testing; new implementation decisions should be compatible with the future App Store and Google Play app.
 
 ## Current Interface
 
@@ -14,7 +14,7 @@ Eword is a mobile interface preview for personal loan accounting. Version `1.0.1
 - Manual debt record creation through the centered `+` button.
 - Confirmation queue for loans and payments.
 - Profile/settings screen with the current app version.
-- Supabase connection panel in the profile screen.
+- Sync status panel for the Supabase backend.
 
 ## Data And Entities
 
@@ -32,26 +32,27 @@ Examples:
 
 ## Where Records Are Stored
 
-Without Supabase settings the app runs in demo mode: records live only in the browser session and reset when the demo state is restored.
+Without a configured Supabase publishable key the app runs in demo mode. Demo records live only in the browser session and are not product storage.
 
-With Supabase connected, records are stored in the project database:
+With Supabase configured in the app build, records are stored in the project database:
 
 - loan records: `public.debt_records`
 - confirmation requests: `public.confirmation_requests`
 - ownership: `owner_user_id`, tied to the current Supabase Auth user
 
-The frontend stores only the Supabase Project URL and public/publishable key in `localStorage`. Never put a `service_role` or secret key into the app.
+The app build may include the Supabase Project URL and public/publishable key. It must never include a `service_role` key, secret key, database password, or connection string.
 
 ## Supabase Setup
 
 Current project URL: `https://zmgxfjocqwratpwwrrqx.supabase.co`
 
-1. Create or open the Supabase project.
+1. Open the Supabase project.
 2. Open SQL Editor and run the full contents of `schema.sql`.
-3. In Authentication settings, enable Anonymous Sign-Ins.
-4. In the app, open `Профиль` -> `Supabase`.
-5. Paste the public/publishable key. The project URL is already prefilled in the app.
-6. Click `Подключить` and then use the sync button in the app header.
+3. In Authentication settings, enable Anonymous Sign-Ins for early testing.
+4. Add the public/publishable key to the app build configuration after RLS is enabled.
+5. Use the app sync button to verify reads and writes.
+
+For the future Expo app, this maps to `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. These are public client values. Secrets belong only in backend code, Supabase Edge Functions, or protected build infrastructure.
 
 `schema.sql` enables Row Level Security and grants access to the `authenticated` role. Anonymous Supabase users still use the `authenticated` database role after `signInAnonymously()`, so records remain private to the generated user id.
 
@@ -60,17 +61,17 @@ Current project URL: `https://zmgxfjocqwratpwwrrqx.supabase.co`
 - Security rules: `SECURITY.md`
 - Forward roadmap: `ROADMAP.md`
 
-GitHub Pages and RawGitHack are preview surfaces only. The production mobile apps should use Supabase Auth, PostgreSQL/RLS, and backend functions for sensitive operations.
+GitHub Pages and RawGitHack are preview surfaces only. Users of the published mobile apps will not interact with GitHub.
 
 ## Active Files
 
-- `index.html`: app markup and screen structure.
+- `index.html`: app markup and screen structure for the current preview.
 - `app.js`: app state, rendering, sorting, form handling, timeline calculations, Supabase sync, and formatting.
 - `supabase-store.js`: Supabase client setup, anonymous auth, reads, inserts, and confirmation updates.
 - `eword-theme-1.0.1.css`: black-orange mobile theme.
-- `eword-supabase-1.0.1.css`: Supabase settings panel styles.
+- `eword-supabase-1.0.1.css`: Supabase sync status panel styles.
 - `eword-chart-1.0.1.css`: dashboard timeline chart styles.
-- `manifest.json`: PWA metadata.
+- `manifest.json`: PWA metadata for preview.
 - `schema.sql`: Supabase PostgreSQL schema, indexes, grants, and RLS policies.
 
 ## Product Direction
