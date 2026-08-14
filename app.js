@@ -1,4 +1,4 @@
-const VERSION = "0.2.8";
+const VERSION = "1.0.1";
 
 const loans = [
   {
