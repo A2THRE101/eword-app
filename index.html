@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0b0a" />
     <title>Eword Mobile 1.0.1</title>
-    <link rel="manifest" href="./manifest.json?v=1.0.1-supabase-project" />
-    <link rel="stylesheet" href="./eword-theme-1.0.1.css?v=1.0.1-supabase-project" />
-    <link rel="stylesheet" href="./eword-supabase-1.0.1.css?v=1.0.1-supabase-project" />
-    <link rel="stylesheet" href="./eword-chart-1.0.1.css?v=1.0.1-supabase-project" />
+    <link rel="manifest" href="./manifest.json?v=1.0.1-production-config" />
+    <link rel="stylesheet" href="./eword-theme-1.0.1.css?v=1.0.1-production-config" />
+    <link rel="stylesheet" href="./eword-supabase-1.0.1.css?v=1.0.1-production-config" />
+    <link rel="stylesheet" href="./eword-chart-1.0.1.css?v=1.0.1-production-config" />
   </head>
   <body>
     <main class="preview-shell">
@@ -162,25 +162,23 @@
             <button type="button"><span>Экспорт данных</span><strong>JSON</strong></button>
           </div>
 
-          <section class="supabase-panel" aria-label="Supabase">
+          <section class="supabase-panel" aria-label="Синхронизация">
             <div class="supabase-head">
               <div>
-                <span>Хранилище</span>
+                <span>Backend</span>
                 <h2>Supabase</h2>
               </div>
-              <strong id="dataModeValue">Демо</strong>
+              <strong id="dataModeValue">Офлайн</strong>
             </div>
-            <label class="form-field">
-              <span>Project URL</span>
-              <input id="supabaseUrl" type="url" placeholder="https://...supabase.co" autocomplete="off" />
-            </label>
-            <label class="form-field">
-              <span>Public key</span>
-              <input id="supabaseKey" type="password" placeholder="sb_publishable_..." autocomplete="off" />
-            </label>
-            <div class="supabase-actions">
-              <button class="secondary-action" id="supabaseConnectButton" type="button">Подключить</button>
-              <button class="secondary-action muted-action" id="supabaseDisconnectButton" type="button">Отключить</button>
+            <div class="sync-settings">
+              <div class="sync-row">
+                <span>Проект</span>
+                <strong id="supabaseProjectValue">zmgxfjocqwratpwwrrqx</strong>
+              </div>
+              <div class="sync-row">
+                <span>Конфигурация</span>
+                <strong>В сборке</strong>
+              </div>
             </div>
             <p class="form-status" id="supabaseStatus" aria-live="polite"></p>
           </section>
@@ -235,7 +233,7 @@
     </template>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.9/dist/umd/supabase.min.js" defer></script>
-    <script src="./supabase-store.js?v=1.0.1-supabase-project" defer></script>
-    <script src="./app.js?v=1.0.1-supabase-project" defer></script>
+    <script src="./supabase-store.js?v=1.0.1-production-config" defer></script>
+    <script src="./app.js?v=1.0.1-production-config" defer></script>
   </body>
 </html>
