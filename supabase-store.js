@@ -1,34 +1,32 @@
 (() => {
-  const CONFIG_KEY = "eword.supabase.config";
   const DEFAULT_SUPABASE_URL = "https://zmgxfjocqwratpwwrrqx.supabase.co";
+  const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "";
+  let runtimeConfig = null;
   let client = null;
 
   function getConfig() {
-    try {
-      const value = window.localStorage.getItem(CONFIG_KEY);
-      const config = value ? JSON.parse(value) : null;
-      return normalizeConfig(config);
-    } catch {
-      return normalizeConfig(null);
-    }
+    const envConfig = window.EWORD_SUPABASE_CONFIG || {};
+    return normalizeConfig(runtimeConfig || {
+      url: envConfig.url || DEFAULT_SUPABASE_URL,
+      key: envConfig.publishableKey || envConfig.key || DEFAULT_SUPABASE_PUBLISHABLE_KEY,
+    });
   }
 
   function saveConfig(config) {
-    const normalized = normalizeConfig(config);
-    window.localStorage.setItem(CONFIG_KEY, JSON.stringify(normalized));
+    runtimeConfig = normalizeConfig(config);
     client = null;
-    return normalized;
+    return runtimeConfig;
   }
 
   function clearConfig() {
-    window.localStorage.removeItem(CONFIG_KEY);
+    runtimeConfig = null;
     client = null;
   }
 
   function normalizeConfig(config) {
     return {
       url: String(config?.url || DEFAULT_SUPABASE_URL).trim().replace(/\/+$/, ""),
-      key: String(config?.key || "").trim(),
+      key: String(config?.key || config?.publishableKey || "").trim(),
     };
   }
 
@@ -42,7 +40,7 @@
 
     const config = getConfig();
     if (!config?.url || !config?.key) {
-      throw new Error("Supabase не настроен.");
+      throw new Error("Supabase не настроен для этой сборки.");
     }
 
     if (!window.supabase?.createClient) {
