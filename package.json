@@ -1,8 +1,8 @@
 {
   "name": "eword-app",
-  "version": "0.2.9",
+  "version": "1.0.1",
   "private": true,
-  "description": "Mobile visual preview for Eword personal loans app.",
+  "description": "Mobile interface preview for Eword personal loans app.",
   "scripts": {
     "start": "python3 -m http.server 4173",
     "preview": "python3 -m http.server 4173",
