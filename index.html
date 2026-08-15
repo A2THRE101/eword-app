@@ -5,14 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0b0a" />
     <title>Eword Mobile 1.0.1</title>
-    <link rel="manifest" href="./manifest.json?v=1.0.1-production-config" />
-    <link rel="stylesheet" href="./eword-theme-1.0.1.css?v=1.0.1-production-config" />
-    <link rel="stylesheet" href="./eword-supabase-1.0.1.css?v=1.0.1-production-config" />
-    <link rel="stylesheet" href="./eword-chart-1.0.1.css?v=1.0.1-production-config" />
+    <link rel="manifest" href="./manifest.json?v=1.0.1-auth" />
+    <link rel="stylesheet" href="./eword-theme-1.0.1.css?v=1.0.1-auth" />
+    <link rel="stylesheet" href="./eword-supabase-1.0.1.css?v=1.0.1-auth" />
+    <link rel="stylesheet" href="./eword-chart-1.0.1.css?v=1.0.1-auth" />
   </head>
   <body>
     <main class="preview-shell">
-      <section class="phone" aria-label="Eword mobile app preview">
+      <section class="phone auth-required" id="phoneShell" aria-label="Eword mobile app preview">
+        <section class="auth-screen" id="authScreen" aria-label="Авторизация">
+          <div class="auth-card">
+            <p class="eyebrow">Eword Mobile 1.0.1</p>
+            <h1 id="authTitle">Вход</h1>
+            <div class="auth-tabs" aria-label="Режим авторизации">
+              <button class="active" type="button" data-auth-mode="signin">Войти</button>
+              <button type="button" data-auth-mode="signup">Регистрация</button>
+            </div>
+            <form class="auth-form" id="authForm">
+              <label class="form-field" id="authNameField">
+                <span>Имя</span>
+                <input id="authName" type="text" placeholder="Мурад" autocomplete="name" />
+              </label>
+              <label class="form-field">
+                <span>Логин</span>
+                <input id="authEmail" type="email" placeholder="email@example.com" autocomplete="email" required />
+              </label>
+              <label class="form-field">
+                <span>Пароль</span>
+                <input id="authPassword" type="password" placeholder="Минимум 8 символов" autocomplete="current-password" required />
+              </label>
+              <button class="primary-action" id="authSubmit" type="submit">Войти</button>
+              <button class="text-button auth-reset" id="resetPasswordButton" type="button">Сбросить пароль</button>
+              <p class="form-status" id="authStatus" aria-live="polite"></p>
+            </form>
+          </div>
+        </section>
+
         <header class="app-header">
           <div>
             <p class="eyebrow">Eword Mobile 1.0.1</p>
@@ -25,7 +53,7 @@
           <div class="balance-band">
             <span>Чистая позиция</span>
             <strong id="netPosition">0 ₽</strong>
-            <p id="syncState">Демо-режим</p>
+            <p id="syncState">Войдите для синхронизации</p>
           </div>
 
           <div class="metric-grid" aria-label="Текущие обязательства">
@@ -96,7 +124,7 @@
             </label>
           </div>
           <div class="stack-list journal-list" id="journalList"></div>
-          <p class="empty-state" id="journalEmpty">Записей по этому фильтру нет.</p>
+          <p class="empty-state" id="journalEmpty">Записей пока нет.</p>
         </section>
 
         <section class="screen" id="confirmationsScreen" data-screen="confirmations">
@@ -105,6 +133,7 @@
             <span>Займы и платежи становятся финальными после согласия обоих участников.</span>
           </div>
           <div class="stack-list" id="confirmationList"></div>
+          <p class="empty-state" id="confirmationEmpty">Запросов пока нет.</p>
         </section>
 
         <section class="screen" id="createScreen" data-screen="create">
@@ -149,17 +178,18 @@
 
         <section class="screen" id="profileScreen" data-screen="profile">
           <div class="profile-block">
-            <div class="profile-avatar">М</div>
+            <div class="profile-avatar" id="profileAvatar">?</div>
             <div>
-              <h2>Мурад</h2>
-              <p>Аккаунт синхронизирован между iOS и Android</p>
+              <h2 id="profileName">Профиль</h2>
+              <p id="profileEmail">Вход по email и паролю</p>
             </div>
           </div>
           <div class="settings-list">
             <button type="button"><span>Валюта по умолчанию</span><strong>RUB</strong></button>
-            <button type="button"><span>Push-напоминания</span><strong>Вкл</strong></button>
-            <button type="button"><span>Вход</span><strong>Анонимный</strong></button>
+            <button type="button"><span>Email</span><strong id="emailStatusValue">Не проверен</strong></button>
+            <button type="button"><span>2FA</span><strong id="mfaStatusValue">Запланировано</strong></button>
             <button type="button"><span>Экспорт данных</span><strong>JSON</strong></button>
+            <button type="button" id="logoutButton"><span>Аккаунт</span><strong>Выйти</strong></button>
           </div>
 
           <section class="supabase-panel" aria-label="Синхронизация">
@@ -186,7 +216,7 @@
           <section class="update-log" aria-label="Версия приложения">
             <h2>Версия приложения</h2>
             <ol>
-              <li><strong>1.0.1</strong><span>Основная черно-оранжевая версия Eword: дашборд, журнал, заявки, профиль и ручное создание записей.</span></li>
+              <li><strong>1.0.1</strong><span>Основная рабочая версия Eword: обязательный вход, реальная база Supabase, журнал, заявки, профиль и ручное создание записей.</span></li>
             </ol>
           </section>
         </section>
@@ -233,7 +263,7 @@
     </template>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.9/dist/umd/supabase.min.js" defer></script>
-    <script src="./supabase-store.js?v=1.0.1-production-config" defer></script>
-    <script src="./app.js?v=1.0.1-production-config" defer></script>
+    <script src="./supabase-store.js?v=1.0.1-auth" defer></script>
+    <script src="./app.js?v=1.0.1-auth" defer></script>
   </body>
 </html>
