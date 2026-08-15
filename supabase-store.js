@@ -126,10 +126,10 @@
     const { data, error } = await supabase
       .from("profiles")
       .select("user_id, display_name, email, email_confirmed_at, mfa_enabled")
-      .single();
+      .maybeSingle();
 
     if (error) throw normalizeDataError(error);
-    return mapProfileFromDb(data);
+    return data ? mapProfileFromDb(data) : null;
   }
 
   async function updateProfile(profile) {
