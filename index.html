@@ -1,238 +1,28 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b0b0a" />
-    <title>Eword Mobile Preview 0.2.9</title>
-    <link rel="manifest" href="./manifest.json?v=0.2.9" />
-    <link rel="stylesheet" href="./eword-theme-0.2.6.css" />
-    <link rel="stylesheet" href="./eword-chart-0.2.8.css" />
-    <link rel="stylesheet" href="./eword-ledger-0.2.9.css" />
-  </head>
-  <body>
-    <main class="preview-shell">
-      <section class="phone" aria-label="Eword mobile visual preview">
-        <header class="app-header">
-          <div>
-            <p class="eyebrow">Eword Mobile 0.2.9</p>
-            <h1 id="screenTitle">Дашборд</h1>
-          </div>
-          <button class="icon-button" id="syncButton" type="button" title="Синхронизация" aria-label="Синхронизация">↻</button>
-        </header>
-
-        <section class="screen active" id="dashboardScreen" data-screen="dashboard">
-          <div class="balance-band">
-            <span>Чистая позиция</span>
-            <strong id="netPosition">0 ₽</strong>
-            <p id="syncState">Синхронизировано только что</p>
-          </div>
-
-          <div class="metric-grid" aria-label="Текущие обязательства">
-            <button class="metric-tile" type="button" data-open-filter="lent">
-              <span>Мне должны</span>
-              <strong id="lentTotal">0 ₽</strong>
-            </button>
-            <button class="metric-tile" type="button" data-open-filter="borrowed">
-              <span>Я должен</span>
-              <strong id="borrowedTotal">0 ₽</strong>
-            </button>
-            <button class="metric-tile urgent" type="button" data-open-filter="overdue">
-              <span>Просрочено</span>
-              <strong id="overdueTotal">0 ₽</strong>
-            </button>
-            <button class="metric-tile" type="button" data-screen-target="confirmations">
-              <span>На подтверждении</span>
-              <strong id="pendingCount">0</strong>
-            </button>
-          </div>
-
-          <section class="debt-timeline" aria-label="Динамика долга по месяцам">
-            <div class="timeline-head">
-              <div>
-                <span>Динамика долга</span>
-                <h2>По срокам возврата</h2>
-              </div>
-              <strong id="timelineTotal">0 ₽</strong>
-            </div>
-            <div class="chart-panel">
-              <div class="chart-scale" aria-hidden="true">
-                <span>+</span>
-                <span>0</span>
-                <span>-</span>
-              </div>
-              <div class="chart-area">
-                <svg class="trend-line" viewBox="0 0 300 132" preserveAspectRatio="none" aria-hidden="true">
-                  <polyline class="trend-line-shadow" id="trendLineShadow" points=""></polyline>
-                  <polyline class="trend-line-path" id="trendLinePath" points=""></polyline>
-                </svg>
-                <div class="bar-track" id="barTrack"></div>
-              </div>
-            </div>
-            <div class="timeline-legend">
-              <span><i class="legend-bar"></i>Изменение за месяц</span>
-              <span><i class="legend-line"></i>Чистая позиция</span>
-            </div>
-          </section>
-        </section>
-
-        <section class="screen" id="journalScreen" data-screen="journal">
-          <div class="controls">
-            <div class="type-tabs" role="tablist" aria-label="Типы долгов">
-              <button class="chip active" type="button" data-filter="all">Все</button>
-              <button class="chip" type="button" data-filter="lent">Я дал</button>
-              <button class="chip" type="button" data-filter="borrowed">Мне дали</button>
-              <button class="chip" type="button" data-filter="pending">Ждут</button>
-              <button class="chip" type="button" data-filter="closed">Закрытые</button>
-            </div>
-            <label class="sort-control">
-              <span>Сортировка</span>
-              <select id="sortSelect">
-                <option value="due">По сроку</option>
-                <option value="amount">По сумме</option>
-                <option value="created">По дате</option>
-                <option value="status">По статусу</option>
-              </select>
-            </label>
-          </div>
-          <div class="stack-list journal-list" id="journalList"></div>
-          <p class="empty-state" id="journalEmpty">Записей по этому фильтру нет.</p>
-        </section>
-
-        <section class="screen" id="personScreen" data-screen="person">
-          <button class="text-button ledger-back" id="backToJournal" type="button">← Назад</button>
-          <section class="ledger-summary" aria-label="Итоги сверки">
-            <div class="ledger-names">
-              <strong id="personOwnerName">Мурад</strong>
-              <span>↔</span>
-              <strong id="personCounterpartyName">Азамат</strong>
-            </div>
-            <p id="personBalance">Операций пока нет</p>
-          </section>
-          <div class="ledger-groups" id="ledgerGroups"></div>
-          <p class="empty-state" id="ledgerEmpty">С этим человеком пока нет операций.</p>
-        </section>
-
-        <section class="screen" id="confirmationsScreen" data-screen="confirmations">
-          <div class="notice">
-            <strong>Подтверждения второй стороны</strong>
-            <span>Займы и платежи становятся финальными после согласия обоих участников.</span>
-          </div>
-          <div class="stack-list" id="confirmationList"></div>
-        </section>
-
-        <section class="screen" id="createScreen" data-screen="create">
-          <form class="entry-form" id="entryForm">
-            <label class="form-field">
-              <span>Тип обязательства</span>
-              <select id="entryDirection" required>
-                <option value="lent">я дал</option>
-                <option value="borrowed">мне дали</option>
-              </select>
-            </label>
-
-            <label class="form-field">
-              <span>Имя</span>
-              <input id="entryPerson" type="text" placeholder="Имя" autocomplete="off" required />
-            </label>
-
-            <label class="form-field">
-              <span>Дата выдачи</span>
-              <input id="entryIssueDate" type="date" required />
-            </label>
-
-            <label class="form-field">
-              <span>Срок исполнения</span>
-              <input id="entryDueDate" type="date" required />
-            </label>
-
-            <label class="form-field form-field-tall">
-              <span>Комментарий</span>
-              <textarea id="entryNote" rows="4" placeholder="За что долг" required></textarea>
-            </label>
-
-            <label class="form-field">
-              <span>Сумма</span>
-              <input id="entryAmount" type="text" placeholder="1 000 000,00" inputmode="decimal" required />
-            </label>
-
-            <button class="primary-action" type="submit">Создать запись</button>
-            <p class="form-status" id="entryStatus" aria-live="polite"></p>
-          </form>
-        </section>
-
-        <section class="screen" id="profileScreen" data-screen="profile">
-          <div class="profile-block">
-            <div class="profile-avatar">М</div>
-            <div>
-              <h2>Мурад</h2>
-              <p>Аккаунт синхронизирован между iOS и Android</p>
-            </div>
-          </div>
-          <div class="settings-list">
-            <button type="button"><span>Валюта по умолчанию</span><strong>RUB</strong></button>
-            <button type="button"><span>Push-напоминания</span><strong>Вкл</strong></button>
-            <button type="button"><span>Вход</span><strong>Телефон / email</strong></button>
-            <button type="button"><span>Экспорт данных</span><strong>JSON</strong></button>
-          </div>
-          <section class="update-log" aria-label="Журнал обновлений приложения">
-            <h2>Журнал обновлений</h2>
-            <ol>
-              <li><strong>0.2.9</strong><span>Добавлена сверка по человеку: две стороны операций, валютные группы и отдельные итоги по валютам.</span></li>
-              <li><strong>0.2.8</strong><span>Диаграмма долгов теперь строится из реальных записей и пересчитывается после создания займа.</span></li>
-              <li><strong>0.2.7</strong><span>Добавлена гистограмма с таймлайном и линией изменения долга в дашборде.</span></li>
-              <li><strong>0.2.6</strong><span>Черно-оранжевая тема Варианта A и журнал обновлений в настройках.</span></li>
-              <li><strong>0.2.5</strong><span>Суммы внутри приложения считаются в копейках, а на экране показываются в рублях.</span></li>
-              <li><strong>0.2.4</strong><span>Форма создания записи: обязательные поля, даты, комментарий и сумма в формате рублей.</span></li>
-              <li><strong>0.2.3</strong><span>Кнопка + по центру нижней навигации и ручное создание записи.</span></li>
-              <li><strong>0.2.2</strong><span>Убран блок “Ближайшие действия”.</span></li>
-              <li><strong>0.2.1</strong><span>Мобильное превью опубликовано через рабочую RawGitHack-ссылку.</span></li>
-              <li><strong>0.2.0</strong><span>Первый мобильный прототип: дашборд, журнал, запросы и профиль.</span></li>
-            </ol>
-          </section>
-        </section>
-
-        <nav class="bottom-nav" aria-label="Навигация">
-          <button class="active" type="button" data-screen-target="dashboard"><span>⌂</span>Дашборд</button>
-          <button type="button" data-screen-target="journal"><span>≡</span>Журнал</button>
-          <button class="create-tab" type="button" data-screen-target="create" aria-label="Создать запись"><span>+</span></button>
-          <button type="button" data-screen-target="confirmations"><span>✓</span>Запросы</button>
-          <button type="button" data-screen-target="profile"><span>○</span>Профиль</button>
-        </nav>
-      </section>
-    </main>
-
-    <template id="loanRowTemplate">
-      <article class="loan-row">
-        <div class="row-main">
-          <div class="row-avatar"></div>
-          <div class="row-copy">
-            <h3></h3>
-            <p></p>
-            <div class="row-meta"></div>
-          </div>
-        </div>
-        <div class="row-side">
-          <strong></strong>
-          <span class="status-pill"></span>
-        </div>
-      </article>
-    </template>
-
-    <template id="confirmationTemplate">
-      <article class="confirm-row">
-        <div>
-          <span class="request-type"></span>
-          <h3></h3>
-          <p></p>
-        </div>
-        <div class="confirm-actions">
-          <button type="button" data-action="decline">Нет</button>
-          <button type="button" data-action="approve">Да</button>
-        </div>
-      </article>
-    </template>
-
-    <script src="./app.js?v=0.2.9" defer></script>
-  </body>
-</html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0b0b0a" />
+<title>Eword Mobile Preview 0.2.10</title>
+<link rel="manifest" href="./manifest.json?v=0.2.9" />
+<link rel="stylesheet" href="./eword-theme-0.2.6.css" />
+<link rel="stylesheet" href="./eword-chart-0.2.8.css" />
+<link rel="stylesheet" href="./eword-ledger-0.2.9.css" />
+<link rel="stylesheet" href="./contacts.css?v=0.2.10" />
+</head>
+<body>
+<main class="preview-shell"><section class="phone" aria-label="Eword mobile visual preview">
+<header class="app-header"><div><p class="eyebrow">Eword Mobile 0.2.10</p><h1 id="screenTitle">Дашборд</h1></div><button class="icon-button" id="syncButton" type="button" title="Синхронизация" aria-label="Синхронизация">↻</button></header>
+<section class="screen active" id="dashboardScreen" data-screen="dashboard"><div class="balance-band"><span>Чистая позиция</span><strong id="netPosition">0 ₽</strong><p id="syncState">Синхронизировано только что</p></div><div class="metric-grid"><button class="metric-tile" type="button" data-open-filter="lent"><span>Мне должны</span><strong id="lentTotal">0 ₽</strong></button><button class="metric-tile" type="button" data-open-filter="borrowed"><span>Я должен</span><strong id="borrowedTotal">0 ₽</strong></button><button class="metric-tile urgent" type="button" data-open-filter="overdue"><span>Просрочено</span><strong id="overdueTotal">0 ₽</strong></button><button class="metric-tile" type="button" data-screen-target="confirmations"><span>На подтверждении</span><strong id="pendingCount">0</strong></button></div><section class="debt-timeline"><div class="timeline-head"><div><span>Динамика долга</span><h2>По срокам возврата</h2></div><strong id="timelineTotal">0 ₽</strong></div><div class="chart-panel"><div class="chart-scale"><span>+</span><span>0</span><span>-</span></div><div class="chart-area"><svg class="trend-line" viewBox="0 0 300 132" preserveAspectRatio="none"><polyline class="trend-line-shadow" id="trendLineShadow" points=""></polyline><polyline class="trend-line-path" id="trendLinePath" points=""></polyline></svg><div class="bar-track" id="barTrack"></div></div></div><div class="timeline-legend"><span><i class="legend-bar"></i>Изменение за месяц</span><span><i class="legend-line"></i>Чистая позиция</span></div></section></section>
+<section class="screen" id="journalScreen" data-screen="journal"><div class="controls"><div class="type-tabs"><button class="chip active" type="button" data-filter="all">Все</button><button class="chip" type="button" data-filter="lent">Я дал</button><button class="chip" type="button" data-filter="borrowed">Мне дали</button><button class="chip" type="button" data-filter="pending">Ждут</button><button class="chip" type="button" data-filter="closed">Закрытые</button></div><label class="sort-control"><span>Сортировка</span><select id="sortSelect"><option value="due">По сроку</option><option value="amount">По сумме</option><option value="created">По дате</option><option value="status">По статусу</option></select></label></div><div class="stack-list journal-list" id="journalList"></div><p class="empty-state" id="journalEmpty">Записей по этому фильтру нет.</p></section>
+<section class="screen" id="personScreen" data-screen="person"><button class="text-button ledger-back" id="backToJournal" type="button">← Назад</button><section class="ledger-summary"><div class="ledger-names"><strong id="personOwnerName">Мурад</strong><span>↔</span><strong id="personCounterpartyName">Азамат</strong></div><p id="personBalance">Операций пока нет</p></section><div class="ledger-groups" id="ledgerGroups"></div><p class="empty-state" id="ledgerEmpty">С этим человеком пока нет операций.</p></section>
+<section class="screen" id="confirmationsScreen" data-screen="confirmations"><div class="notice"><strong>Подтверждения второй стороны</strong><span>Займы и платежи становятся финальными после согласия обоих участников.</span></div><div class="stack-list" id="confirmationList"></div></section>
+<section class="screen" id="createScreen" data-screen="create"><form class="entry-form" id="entryForm"><label class="form-field"><span>Тип обязательства</span><select id="entryDirection" required><option value="lent">я дал</option><option value="borrowed">мне дали</option></select></label><label class="form-field"><span>Имя</span><input id="entryPerson" type="text" placeholder="Имя" autocomplete="off" required /></label><label class="form-field"><span>Дата выдачи</span><input id="entryIssueDate" type="date" required /></label><label class="form-field"><span>Срок исполнения</span><input id="entryDueDate" type="date" required /></label><label class="form-field form-field-tall"><span>Комментарий</span><textarea id="entryNote" rows="4" placeholder="За что долг" required></textarea></label><label class="form-field"><span>Сумма</span><input id="entryAmount" type="text" placeholder="1 000 000,00" inputmode="decimal" required /></label><button class="primary-action" type="submit">Создать запись</button><p class="form-status" id="entryStatus"></p></form></section>
+<section class="screen" id="profileScreen" data-screen="profile"><div class="profile-block"><div class="profile-avatar">М</div><div><h2>Мурад</h2><p>Аккаунт синхронизирован между iOS и Android</p></div></div><div class="settings-list"><button type="button"><span>Валюта по умолчанию</span><strong>RUB</strong></button><button type="button"><span>Push-напоминания</span><strong>Вкл</strong></button><button type="button"><span>Вход</span><strong>Телефон / email</strong></button><button type="button"><span>Экспорт данных</span><strong>JSON</strong></button></div><section class="update-log"><h2>Журнал обновлений</h2><ol><li><strong>0.2.10</strong><span>В Профиль добавлены Контакты: имя, телефон, email и переход к сверке по человеку.</span></li><li><strong>0.2.9</strong><span>Добавлена сверка по человеку: две стороны операций, валютные группы и отдельные итоги по валютам.</span></li><li><strong>0.2.8</strong><span>Диаграмма долгов теперь строится из реальных записей.</span></li><li><strong>0.2.7</strong><span>Добавлена гистограмма с таймлайном.</span></li><li><strong>0.2.6</strong><span>Черно-оранжевая тема Варианта A.</span></li></ol></section></section>
+<nav class="bottom-nav"><button class="active" type="button" data-screen-target="dashboard"><span>⌂</span>Дашборд</button><button type="button" data-screen-target="journal"><span>≡</span>Журнал</button><button class="create-tab" type="button" data-screen-target="create"><span>+</span></button><button type="button" data-screen-target="confirmations"><span>✓</span>Запросы</button><button type="button" data-screen-target="profile"><span>○</span>Профиль</button></nav>
+</section></main>
+<template id="loanRowTemplate"><article class="loan-row"><div class="row-main"><div class="row-avatar"></div><div class="row-copy"><h3></h3><p></p><div class="row-meta"></div></div></div><div class="row-side"><strong></strong><span class="status-pill"></span></div></article></template>
+<template id="confirmationTemplate"><article class="confirm-row"><div><span class="request-type"></span><h3></h3><p></p></div><div class="confirm-actions"><button type="button" data-action="decline">Нет</button><button type="button" data-action="approve">Да</button></div></article></template>
+<script src="./app.js?v=0.2.9" defer></script><script src="./contacts.js?v=0.2.10" defer></script>
+</body></html>
